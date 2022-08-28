@@ -7,11 +7,15 @@ Welcome to pygame_cards's documentation!
 ========================================
 
 
+If you want to use standard playing cards, you can have a look
+to the implemented cards.
+
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   tutorial
    api
 
 

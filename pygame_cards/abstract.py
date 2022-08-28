@@ -31,12 +31,16 @@ class AbstractCard:
     name: str
 
     u_id: int = field(init=False)
-    logger: logging.Logger = field(init=False)
+    logger: logging.Logger = field(init=False, repr=False)
 
     graphics_type: Type[AbstractCardGraphics] = field(
-        init=False, compare=False
+        init=False,
+        compare=False,
+        repr=False,
     )
-    _graphics: AbstractCardGraphics = field(init=False, compare=False)
+    _graphics: AbstractCardGraphics = field(
+        init=False, compare=False, repr=False
+    )
 
     def __post_init__(self):
         # Get a thread safe unique ID for that card
