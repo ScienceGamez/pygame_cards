@@ -8,7 +8,7 @@ import pygame_cards
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "pygame_cards"
+project = "pygame cards"
 copyright = "2022, ScienceGames"
 author = "ScienceGames"
 

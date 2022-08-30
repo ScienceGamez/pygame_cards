@@ -10,7 +10,8 @@ Using an existing card game
 
 `pygame_cards` provides you with a base set of cards.
 
-TODO: write how to use it.
+If you don't care about how one can create cards,
+jump to :ref:`tuto_fist_card_game`
 
 
 Creating a new card game
@@ -86,3 +87,91 @@ method.
 
 Adding Graphics
 """""""""""""""
+
+Now we are going to create graphics for our game.
+When you do graphics, you will need some files for the content.
+Just make sure that you don't used any copyrighted files you are not
+allowed to.
+
+For this tutorial, we will use two sources:
+1. `pygame_emojis <https://github.com/ScienceGamez/pygame_emojis>`_ for the different art on the cards.
+2. `DALL-E 2 <https://openai.com/dall-e-2/>`_ to produce some images of the lotr characters.
+
+
+Let's start by thinking what we want on the card.
+It is always a good idea to make a drawing first.
+
+.. image:: ../examples/tutorial/images/drawing_tuto.png
+  :width: 600
+  :alt: How the cards could look like
+
+So basically attack and health points on the corners, the name on top
+and an image in the middle of the card.
+
+
+Let's now create the code for that.
+
+We again can use the object oriented API to create a graphics object
+suiting our need.
+We will inherit from
+:py:class:`~pygame_cards.abstract.AbstractCardGraphics`.
+
+This class simply needs a :py:func:`surface` property.
+We use python :py:func:`cached_property` so that once the
+suface is created it will be used all the time and does not need to be
+recreated at every game frame.
+
+
+.. literalinclude:: ../examples/tutorial/minion_card_graphics.py
+    :language: python
+
+So we created a graphics for the cards and displayed it
+on the screen.
+
+Let's see the result:
+
+
+.. image:: ../examples/tutorial/images/card_from_tuto.png
+
+Okay, this is quite ugly 😅. Now you can show your talent and
+implement something better.
+
+.. note::
+    We did not use the attack and health fields, but this will
+    come in a later tutorial.
+
+`pygame_cards` provides you some functions to help you in the
+creation of your cards.
+But for now we will jump to the next section which is how
+you can include your cards inside a game.
+
+.. _tuto_fist_card_game:
+
+Your First Card Game
+--------------------
+
+
+We will try to do a rock-paper-scisors like game using
+lotr characters.
+
+* Frodo > Gandalf because of the power of the ring.
+* Gandalf > Sam becasue of the power of his wiseness.
+* Sam > Frodo because of the power of friendship.
+
+
+We are going to use different helpers to make cards management
+easier.
+
+* Cards and Oponents cards will be shown in a
+    `pygame_cards.hands.HandsGraphics`
+* Cards will be played on a `pygame_cards.set.Board`
+* A winning animation will be done using the graphics class we created above
+* Managing how the player select a card and plays it will be managed
+    by a `pygame_cards.managers.GameManager`
+
+
+
+The code looks like that:
+
+
+TODO: implement tuto
