@@ -1,4 +1,17 @@
+from enum import Enum
 from pygame import Surface
+
+
+class AutoName(Enum):
+    def _generate_next_value_(name, start, count, last_values):
+        return name
+
+
+class AutoUpperName(AutoName):
+    """Same as autoname, but enforcing upper case."""
+
+    def _generate_next_value_(name, start, count, last_values):
+        return str(name).upper()
 
 
 def position_for_centering(
