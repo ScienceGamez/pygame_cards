@@ -6,7 +6,7 @@ from pathlib import Path
 import random
 from typing import Type
 from pygame_cards.abstract import AbstractCard
-from pywonders.io.json import to_json
+from pygame_cards.io.json import to_json
 
 
 class CardsSet(list[AbstractCard]):

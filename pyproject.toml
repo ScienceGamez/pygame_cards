@@ -18,6 +18,11 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+    "pygame",
+    "pygame_emojis",
+    "numpy"
+]
 
 [project.urls]
 "Homepage" = "https://github.com/ScienceGamez/pygame_cards"
