@@ -45,6 +45,7 @@ class CardsetGraphic(AbstractGraphic):
         for card in self.cardset:
             # Enforce the card size
             card.graphics.size = self.card_size
+        self._raised_with_hovered_warning = False
 
     @abstractproperty
     def surface(self) -> pygame.Surface:
@@ -78,9 +79,11 @@ class CardsetGraphic(AbstractGraphic):
 
     def with_hovered(self, card: AbstractCard | None) -> pygame.Surface:
         """Show the hand with the card hovered."""
-        logging.warning(
-            f"Not implemented `with_hovered()` in {type(self).__name__}"
-        )
+        if not self._raised_with_hovered_warning:
+            logging.warning(
+                f"Not implemented `with_hovered()` in {type(self).__name__}",
+            )
+            self._raised_with_hovered_warning = True
         return self.surface
 
 

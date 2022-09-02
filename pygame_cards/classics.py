@@ -186,7 +186,9 @@ class EmojisFrenchSuits(AbstractCardGraphics):
             flipped_icon = pygame.transform.flip(icon_s, False, True)
             r = self.symbols_rows
             c = self.symbols_cols
-            print(f"{r=}, {c=}, {s.get_size()}, {icon_s.get_size()}")
+            self.logger.debug(
+                f"{r=}, {c=}, {s.get_size()}, {icon_s.get_size()}"
+            )
             if self.card.number in [2, 3]:
                 s.blit(icon_s, (c[1], r[0]))
                 s.blit(flipped_icon, (c[1], r[-1]))

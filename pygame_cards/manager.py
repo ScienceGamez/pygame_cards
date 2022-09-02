@@ -257,7 +257,8 @@ if __name__ == "__main__":
     import pygame
     from pygame_cards.classics import CardSets as ClassicCardSet
 
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig()
+    # logging.basicConfig(level=logging.DEBUG)
 
     pygame.init()
 
@@ -288,7 +289,6 @@ if __name__ == "__main__":
     while 1:
         screen.fill("black")
         time_delta = clock.tick(60) / 1000.0
-        print(time_delta)
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT:
