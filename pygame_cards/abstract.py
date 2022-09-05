@@ -26,6 +26,7 @@ class AbstractCard:
     :attr name: The name of the card
     :attr u_id: A unique identifier for each card. Cards can be in
         two similar exemplar, but will have different u_ids.
+    :attr graphics_type: The type of graphics we want to use.
     """
 
     name: str
@@ -130,3 +131,12 @@ class AbstractCardGraphics(AbstractGraphic):
         pygame.draw.rect(surf, "white", (0, 0, *self.size), 0, rad)
 
         return surf
+
+
+class Manager:
+    logger: logging.Logger
+
+    def __init__(self) -> None:
+        self.logger = logging.getLogger(
+            f"pygame_cards.manager.{type(self).__name__}"
+        )

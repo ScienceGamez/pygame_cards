@@ -14,6 +14,10 @@ class CardsSet(list[AbstractCard]):
 
     This class inherit diretly from the python list.
     This implies that any method from lists can be used.
+    It represent the card set at the code or API level.
+    If is meant to be used together with
+    :py:class:`~pygame_cards.abstract.AbstractCardGraphics`
+    for the graphics.
     """
 
     # creation methods

@@ -34,15 +34,20 @@ class CardsetGraphic(AbstractGraphic):
     cardset: CardsSet
 
     # Defualt hand size
-    size: tuple[float, float] = (900, 240)
-    card_size: tuple[float, float] = (135, 200)
+    size: tuple[int, int] = (900, 240)
+    card_size: tuple[int, int] = (135, 200)
     card_border_radius: int = 20
 
     max_cards: int = 0
 
+    graphics_type: type | None = None
+
     def __post_init__(self):
 
         for card in self.cardset:
+            # Enforce the type
+            if self.graphics_type:
+                card.graphics_type = self.graphics_type
             # Enforce the card size
             card.graphics.size = self.card_size
         self._raised_with_hovered_warning = False

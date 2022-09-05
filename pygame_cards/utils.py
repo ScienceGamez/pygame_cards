@@ -1,5 +1,14 @@
 from enum import Enum
+from pathlib import Path
 from pygame import Surface
+
+import pygame_cards
+
+
+DEFAULT_CARDBACK = Path(
+    *pygame_cards.__path__,
+    "images/DALL·E 2022-08-25 13.56.20 - funny happy python, digital art.png",
+)
 
 
 class AutoName(Enum):

@@ -11,6 +11,8 @@ from pygame_cards.hands import CardsetGraphic
 
 from pygame_emojis import load_svg
 
+from pygame_cards.utils import DEFAULT_CARDBACK
+
 
 @dataclass
 class Deck(CardsetGraphic):
@@ -22,10 +24,7 @@ class Deck(CardsetGraphic):
     def __post_init__(self):
         super().__post_init__()
 
-        self.card_back = Path(
-            *pygame_cards.__path__,
-            "images/DALL·E 2022-08-25 13.56.20 - funny happy python, digital art.png",
-        )
+        self.card_back = DEFAULT_CARDBACK
         # Assign a default max size assuming the deck is full
         if self.max_cards == 0:
             self.max_cards = len(self.cardset)

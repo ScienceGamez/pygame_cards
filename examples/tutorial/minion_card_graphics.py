@@ -90,38 +90,37 @@ for card in MY_COMMUNITY_OF_THE_RING:
         filepath=Path("images", file),
     )
 
-# A very simple game loop to show the cards
-pygame.init()
+if __name__ == "__main__":
 
+    # A very simple game loop to show the cards
+    pygame.init()
 
-size = width, height = 1000, 500
+    size = width, height = 1000, 500
 
+    screen = pygame.display.set_mode(size)
+    screen.fill("black")
 
-screen = pygame.display.set_mode(size)
-screen.fill("black")
+    for i, card in enumerate(MY_COMMUNITY_OF_THE_RING):
 
-for i, card in enumerate(MY_COMMUNITY_OF_THE_RING):
+        position = (50 + i * (100 + card.graphics.size[0]), 100)
 
-    position = (50 + i * (100 + card.graphics.size[0]), 100)
+        # Simply blit the card on the main surface
+        screen.blit(card.graphics.surface, position)
 
-    # Simply blit the card on the main surface
-    screen.blit(card.graphics.surface, position)
+    # Save images for the documentation
+    pygame.image.save(
+        screen,
+        Path("images", f"card_from_tuto.png"),
+    )
 
-# Save images for the documentation
-pygame.image.save(
-    screen,
-    Path("images", f"card_from_tuto.png"),
-)
+    while 1:
 
+        for event in pygame.event.get():
 
-while 1:
+            if event.type == pygame.QUIT:
+                sys.exit()
 
-    for event in pygame.event.get():
+        pygame.display.flip()
 
-        if event.type == pygame.QUIT:
-            sys.exit()
-
-    pygame.display.flip()
-
-    # Make sure you don't burn your cpu
-    sleep(1)
+        # Make sure you don't burn your cpu
+        sleep(1)

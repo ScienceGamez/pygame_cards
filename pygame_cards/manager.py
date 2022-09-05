@@ -5,6 +5,7 @@ import logging
 
 import pygame
 from pygame_cards.abstract import AbstractCard as Card
+from pygame_cards.abstract import Manager
 from pygame_cards.deck import Deck
 from pygame_cards.hands import (
     AlignedHand,
@@ -17,29 +18,20 @@ from pygame_cards.set import CardsSet
 from pygame_cards.effects import Decay, outer_halo
 
 
-class Manager:
-    logger: logging.Logger
-
-    def __init__(self) -> None:
-        self.logger = logging.getLogger(
-            f"pygame_cards.manager.{type(self).__name__}"
-        )
-
-
 @dataclass
 class CardSetRights:
     """Rigths for what the manager can do with a card set.
 
 
     :attr clickable: Whether clicking on the set will
-        generate SET_CLICKED events.
+        generate CARDSSET_CLICKED events.
     :attr draggable_out: Whether we can drag the card out
         of the card set to another one.
     :attr draggable_in: Whether we can drag a card from
         another card set into this one.
     """
 
-    clickable: bool = True
+    clickable: bool = False
     draggable_out: bool = True
     draggable_in: bool = True
 
@@ -107,6 +99,8 @@ class CardsManager(Manager):
             case pygame.event.EventType(type=pygame.MOUSEBUTTONUP):
                 if self._card_under_acquisition is not None:
                     self._stop_aquiring_card = True
+                else:
+                    self._is_aquiring_card = False
 
     def update(self, time: int) -> bool:
         """Update the manager with the new time.

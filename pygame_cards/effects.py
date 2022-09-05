@@ -65,8 +65,10 @@ def outer_halo(
 
     """
     inner_size = inner_surface.get_size()
+    inner_size = (int(inner_size[0]), int(inner_size[1]))
+    radius = int(radius)
     surf = pygame.Surface(
-        (inner_size[0] + 2 * int(radius), inner_size[1] + 2 * int(radius)),
+        (inner_size[0] + 2 * radius, inner_size[1] + 2 * int(radius)),
         pygame.SRCALPHA,
     )
     if fill_inside:
