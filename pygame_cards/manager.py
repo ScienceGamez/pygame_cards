@@ -7,6 +7,7 @@ import pygame
 from pygame_cards.abstract import AbstractCard as Card
 from pygame_cards.abstract import Manager
 from pygame_cards.deck import Deck
+from pygame_cards.events import cardsset_clicked
 from pygame_cards.hands import (
     AlignedHand,
     BaseHand,
@@ -52,7 +53,7 @@ class CardsManager(Manager):
 
     card_sets: list[CardsetGraphic]
     _card_sets_positions: list[tuple[int, int]]
-    _card_sets_rigths: list[CardsetGraphic]
+    _card_sets_rigths: list[CardSetRights]
 
     # Attribues for recoreding past moves
     last_mouse_pos: tuple[int, int] = (0, 0)
@@ -143,7 +144,17 @@ class CardsManager(Manager):
                     break
 
         if self._is_aquiring_card and self._stop_aquiring_card:
-            # Was a single click done
+            # Was a single click
+            _card_set_rights = self._card_sets_rigths[
+                self.card_sets.index(self._cardset_under_mouse)
+            ]
+            if _card_set_rights.clickable:
+                # Post an event in the loop
+                clicked_event = cardsset_clicked(
+                    self._cardset_under_mouse, self._card_under_mouse
+                )
+                pygame.event.post(clicked_event)
+            # Single click done
             self._is_aquiring_card, self._stop_aquiring_card = False, False
 
         if (
@@ -151,18 +162,22 @@ class CardsManager(Manager):
             and self._card_under_mouse is not None
             and self._card_under_acquisition is None
         ):
-            # User starts to aquire a card
-            self._card_under_acquisition = self._card_under_mouse
-            self._cardset_of_acquisition = self._cardset_under_mouse
+            _card_set_rights = self._card_sets_rigths[
+                self.card_sets.index(self._cardset_under_mouse)
+            ]
+            if _card_set_rights.draggable_out:
+                # User starts to aquire a card
+                self._card_under_acquisition = self._card_under_mouse
+                self._cardset_of_acquisition = self._cardset_under_mouse
 
-            self.logger.debug(
-                f"Under acquisition {self._card_under_acquisition}"
-            )
-            self._cardset_of_acquisition.remove_card(
-                self._card_under_acquisition
-            )
+                self.logger.debug(
+                    f"Under acquisition {self._card_under_acquisition}"
+                )
+                self._cardset_of_acquisition.remove_card(
+                    self._card_under_acquisition
+                )
 
-            self._card_under_acquisition.graphics.clear_cache()
+                self._card_under_acquisition.graphics.clear_cache()
 
             self._cardset_under_mouse = None
             self._card_under_mouse = None
@@ -170,7 +185,12 @@ class CardsManager(Manager):
 
         if self._stop_aquiring_card:
             # Card released
-            if self._cardset_under_mouse is not None:
+            if (
+                self._cardset_under_mouse is not None
+                and self.get_cardset_rights(
+                    self._cardset_under_mouse
+                ).draggable_in
+            ):
                 self._cardset_under_mouse.append_card(
                     self._card_under_acquisition
                 )
@@ -190,6 +210,9 @@ class CardsManager(Manager):
         )
         self.last_mouse_pos = mouse_pos
 
+    def get_cardset_rights(self, cards_set: CardsetGraphic) -> CardSetRights:
+        return self._card_sets_rigths[self.card_sets.index(cards_set)]
+
     def draw(self, window: pygame.Surface, rotate_moving_card: bool = True):
         """Draw the cards on the screen."""
         for card_set, position in zip(
@@ -199,6 +222,7 @@ class CardsManager(Manager):
             if (
                 card_set == self._cardset_under_mouse
                 and self._card_under_acquisition is not None
+                and self.get_cardset_rights(card_set).draggable_in
             ):
                 # Add halo to the set under which the card is
                 radius = (card_set.size[0] + card_set.size[1]) // 50
@@ -218,6 +242,7 @@ class CardsManager(Manager):
             if (
                 card_set == self._cardset_under_mouse
                 and self._card_under_mouse is not None
+                and self._card_under_acquisition is None
             ):
 
                 # Show the hovered card
