@@ -49,7 +49,9 @@ manager.add_set(
     # Place them in front on the screen
     (width / 4, 0),
     # Remove the possibility to interact with enemy cards
-    CardSetRights(draggable_in=False, draggable_out=False),
+    CardSetRights(
+        draggable_in=False, draggable_out=False, highlight_hovered_card=False
+    ),
 )
 
 battle_ground = CardsSet()
@@ -76,6 +78,16 @@ clock = pygame.time.Clock()
 
 annimation_tick_left = 0
 
+
+def enemy_plays_cards():
+    """Make the enemy play his card"""
+    card_taken = ennemy_cards_graphics.cardset[0]
+    ennemy_cards_graphics.remove_card(card_taken)
+    battle_ground_graphics.append_card(card_taken)
+
+
+enemy_plays_cards()
+
 while 1:
     screen.fill("black")
     time_delta = clock.tick(60) / 1000.0
@@ -93,6 +105,8 @@ while 1:
             my_card = battle_ground[0]
             my_cards_graphics.append_card(my_card)
             battle_ground_graphics.remove_card(my_card)
+
+            enemy_plays_cards()
 
         annimation_tick_left -= 1
 

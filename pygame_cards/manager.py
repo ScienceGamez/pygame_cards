@@ -1,5 +1,4 @@
 """Game Manager for cards in pygame."""
-from collections import namedtuple
 from dataclasses import dataclass
 import logging
 
@@ -30,11 +29,14 @@ class CardSetRights:
         of the card set to another one.
     :attr draggable_in: Whether we can drag a card from
         another card set into this one.
+    :attr highlight_hovered_card: Whether to highlight the
+        hoverd_card from the cardset when the card set is hovered
     """
 
     clickable: bool = False
     draggable_out: bool = True
     draggable_in: bool = True
+    highlight_hovered_card: bool = True
 
 
 class CardsManager(Manager):
@@ -243,8 +245,8 @@ class CardsManager(Manager):
                 card_set == self._cardset_under_mouse
                 and self._card_under_mouse is not None
                 and self._card_under_acquisition is None
+                and self.get_cardset_rights(card_set).highlight_hovered_card
             ):
-
                 # Show the hovered card
                 hover = card_set.with_hovered(self._card_under_mouse)
                 window.blit(
