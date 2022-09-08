@@ -12,8 +12,8 @@ from pygame_cards.set import CardsSet
 pygame.init()
 
 
-# screen = pygame.display.set_mode(flags=pygame.FULLSCREEN)
-screen = pygame.display.set_mode((400, 300))
+screen = pygame.display.set_mode(flags=pygame.FULLSCREEN)
+# screen = pygame.display.set_mode((400, 300))
 size = width, height = screen.get_size()
 print(size)
 
