@@ -4,8 +4,6 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import sys
-
-sys.path.append("..")
 import pygame_cards
 
 # -- Project information -----------------------------------------------------
