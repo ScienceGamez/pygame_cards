@@ -171,7 +171,14 @@ easier.
 
 
 
-The code looks like that:
+The code looks like that with comments inside explaining what and why we do it:
+
+You can actually improve it and I will update this tuto 😉.
 
 
-TODO: implement tuto
+
+.. literalinclude:: ../examples/tutorial/first_game.py
+    :language: python
+
+
+I hope you will find it easy to implement your own games.
