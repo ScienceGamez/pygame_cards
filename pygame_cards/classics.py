@@ -53,32 +53,35 @@ LevelEmojis: dict[Level, str] = {
 }
 
 
+@dataclass
 class EmojisFrenchSuits(AbstractCardGraphics):
     """A graphics showing the cards with emojis."""
 
     card: NumberCard
-    _icon_size: int = 60
 
-    @property
-    def icon_size(self):
-        return self._icon_size
+    @cached_property
+    def icon_size(self) -> tuple[int, int]:
+        return (self.size[0] / 5, self.size[1] / 7)
 
     def clear_cache(self) -> None:
         super().clear_cache()
         self.__dict__.pop("symbols_rows", None)
         self.__dict__.pop("symbols_cols", None)
         self.__dict__.pop("top_label", None)
+        self.__dict__.pop("icon_size", None)
 
     @cached_property
     def symbols_rows(self):
         return [
-            self.size[1] / 8 * (i + 1) - self._icon_size / 2 for i in range(7)
+            self.size[1] / 8 * (i + 1) - self.icon_size[0] / 2
+            for i in range(7)
         ]
 
     @cached_property
     def symbols_cols(self):
         return [
-            self.size[0] / 4 * (i + 1) - self._icon_size / 2 for i in range(3)
+            self.size[0] / 4 * (i + 1) - self.icon_size[1] / 2
+            for i in range(3)
         ]
 
     @cached_property
@@ -182,6 +185,7 @@ class EmojisFrenchSuits(AbstractCardGraphics):
 
         elif isinstance(self.card.number, int):
             # place the icons
+
             icon_s = load_emoji(self.card.color.value, self.icon_size)
             flipped_icon = pygame.transform.flip(icon_s, False, True)
             r = self.symbols_rows
