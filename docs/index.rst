@@ -16,6 +16,7 @@ to the implemented cards.
    :caption: Contents:
 
    tutorial
+   existing_sets
    api
 
 
