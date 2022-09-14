@@ -11,6 +11,17 @@ If you want to use standard playing cards, you can have a look
 to the implemented cards.
 
 
+To install you can simply do
+
+.. code::
+
+   pip install pygame_cards
+
+
+The code is available on
+`our github repository <https://github.com/ScienceGamez/pygame_cards>`_
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
