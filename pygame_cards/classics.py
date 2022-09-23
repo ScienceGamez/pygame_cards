@@ -16,6 +16,7 @@ from pygame_emojis import load_emoji, load_svg, find_code, _SVG_DIR
 
 from pygame_cards.effects import outer_halo, Decay
 from pygame_cards.set import CardsSet
+from pygame_cards.defaults import DefaultCardsSet
 
 
 class Colors(Enum):
@@ -251,25 +252,29 @@ class CardSets:
 
     @classmethod
     @property
-    def n52(self) -> CardsSet[NumberCard]:
-        return CardsSet(
+    def n52(self) -> DefaultCardsSet[NumberCard]:
+        cardset = DefaultCardsSet(
             [
                 NumberCard(f"{n} of {c.value}", n, c)
                 for c in Colors
                 for n in [i for i in range(2, 11)] + [l for l in Level]
             ]
         )
+        cardset.name = "n52"
+        return cardset
 
     @classmethod
     @property
     def n36(self) -> CardsSet[NumberCard]:
-        return CardsSet(
+        cardset = DefaultCardsSet(
             [
                 NumberCard(f"{n} of {c.value}", n, c)
                 for c in Colors
                 for n in [i for i in range(6, 11)] + [l for l in Level]
             ]
         )
+        cardset.name = "n36"
+        return cardset
 
 
 if __name__ == "__main__":
