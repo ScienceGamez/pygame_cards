@@ -15,19 +15,18 @@ from pygame_cards.utils import DEFAULT_CARDBACK
 
 
 @dataclass
-class Deck(CardsetGraphic):
-    """Graphics for a deck."""
+class CardBackOwner(CardsetGraphic):
+    """Cardset Grapics that will show card back.
 
-    size: tuple[int, int] = (160, 230)
+    Support setting card backs.
+    """
+
     _card_back: pygame.Surface = field(init=False)
 
     def __post_init__(self):
         super().__post_init__()
 
         self.card_back = DEFAULT_CARDBACK
-        # Assign a default max size assuming the deck is full
-        if self.max_cards == 0:
-            self.max_cards = len(self.cardset)
 
     @property
     def card_back(self) -> pygame.Surface:
@@ -70,6 +69,20 @@ class Deck(CardsetGraphic):
             outer_border(_card_back, inplace=True)
 
         self._card_back = _card_back
+
+
+@dataclass
+class Deck(CardBackOwner):
+    """Graphics for a deck."""
+
+    size: tuple[int, int] = (160, 230)
+
+    def __post_init__(self):
+        super().__post_init__()
+
+        # Assign a default max size assuming the deck is full
+        if self.max_cards == 0:
+            self.max_cards = len(self.cardset)
 
     @cached_property
     def surface(self) -> pygame.Surface:

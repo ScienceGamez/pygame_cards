@@ -23,6 +23,9 @@ class CardOverlap(AutoName):
 class CardsetGraphic(AbstractGraphic):
     """A base graphic fro any card holder.
 
+    This will show a card set on the screen.
+    You should implement the :meth:`surface`.
+
     :attr cardset: The set of card that is shown.
     :attr size: A tuple with the size of the requested card in this graphic.
     :attr card_size: A tuple with the size of the cards in this graphic.
