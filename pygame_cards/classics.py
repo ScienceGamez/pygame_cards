@@ -242,6 +242,32 @@ class NumberCard(AbstractCard):
 
     graphics_type = EmojisFrenchSuits
 
+    def is_one_level_less_than(
+        self, other_card: NumberCard, as_equals_1: bool = False
+    ) -> bool:
+        """Return whether this card is one level less than the other_card.
+
+        :arg as_equals_1: Whether the As should be considered as 1 (worst of all)
+            or if it should be considered as the Best card
+        """
+        match other_card.number:
+            case Level.KING:
+                return self.number == Level.QUEEN
+            case Level.QUEEN:
+                return self.number == Level.JACK
+            case Level.JACK:
+                return self.number == 10
+            case Level.AS:
+                return False if as_equals_1 else self.number == Level.KING
+            case 2:
+                return self.number == Level.AS if as_equals_1 else False
+            case int():
+                if isinstance(self.number, Level):
+                    return False
+                return other_card.number == self.number + 1
+            case _:
+                raise NotImplementedError(f"{other_card.number = }")
+
 
 class CardSets:
     """Default card sets that can be used.

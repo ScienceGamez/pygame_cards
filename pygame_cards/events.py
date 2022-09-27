@@ -6,6 +6,7 @@ from pygame_cards.abstract import AbstractCard
 
 if TYPE_CHECKING:
     from pygame_cards.set import CardsSet
+    from pygame_cards.hands import CardsetGraphic
 # TODO: implement these events in a manager
 # Graphics Events
 CARD_DRAG_STARTED = custom_type()
@@ -28,6 +29,20 @@ def cardsset_clicked(set: CardsSet, card: AbstractCard | None):
     The card clicked is also given. None if no card was under the click.
     """
     return Event(CARDSSET_CLICKED, {"set": set, "card": card})
+
+
+def card_moved(
+    card: AbstractCard, from_set: CardsetGraphic, to_set: CardsetGraphic
+):
+    """When a card has been moved from one set to another."""
+    return Event(
+        CARD_MOVED,
+        {
+            "card": card,
+            "from_set": from_set,
+            "to_set": to_set,
+        },
+    )
 
 
 if __name__ == "__main__":

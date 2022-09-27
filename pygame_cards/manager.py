@@ -1,12 +1,13 @@
 """Game Manager for cards in pygame."""
 from dataclasses import dataclass
 import logging
+from typing import Callable
 
 import pygame
 from pygame_cards.abstract import AbstractCard as Card
 from pygame_cards.abstract import Manager
 from pygame_cards.deck import Deck
-from pygame_cards.events import cardsset_clicked
+from pygame_cards.events import cardsset_clicked, card_moved
 from pygame_cards.hands import (
     AlignedHand,
     BaseHand,
@@ -35,8 +36,14 @@ class CardSetRights:
 
     clickable: bool = False
     draggable_out: bool = True
-    draggable_in: bool = True
+    draggable_in: bool | Callable[[Card], bool] = True
     highlight_hovered_card: bool = True
+
+    def __post_init__(self):
+        # Convert to a function
+        if isinstance(self.draggable_in, bool):
+            drag_in = self.draggable_in
+            self.draggable_in = lambda card: drag_in
 
 
 class CardsManager(Manager):
@@ -48,8 +55,9 @@ class CardsManager(Manager):
 
     Capabilities:
 
-    * Looking which cardset and card are under the player mouse.
+    * Tracking which cardset and card are under the player mouse.
     * Moving cards from on cardset to another
+    * Add related events in the game loop
 
     """
 
@@ -181,20 +189,35 @@ class CardsManager(Manager):
 
                 self._card_under_acquisition.graphics.clear_cache()
 
-            self._cardset_under_mouse = None
+            # self._cardset_under_mouse = None
             self._card_under_mouse = None
             self._is_aquiring_card = False
 
         if self._stop_aquiring_card:
             # Card released
+            if self._cardset_under_mouse == self._cardset_of_acquisition:
+                # Check for click event
+                pygame.event.post(
+                    cardsset_clicked(
+                        self._cardset_under_mouse, self._card_under_acquisition
+                    )
+                )
             if (
                 self._cardset_under_mouse is not None
                 and self.get_cardset_rights(
                     self._cardset_under_mouse
-                ).draggable_in
+                ).draggable_in(self._card_under_acquisition)
             ):
                 self._cardset_under_mouse.append_card(
                     self._card_under_acquisition
+                )
+
+                pygame.event.post(
+                    card_moved(
+                        self._card_under_acquisition,
+                        self._cardset_of_acquisition,
+                        self._cardset_under_mouse,
+                    )
                 )
             else:
                 self._cardset_of_acquisition.append_card(
@@ -224,7 +247,9 @@ class CardsManager(Manager):
             if (
                 card_set == self._cardset_under_mouse
                 and self._card_under_acquisition is not None
-                and self.get_cardset_rights(card_set).draggable_in
+                and self.get_cardset_rights(card_set).draggable_in(
+                    self._card_under_acquisition
+                )
             ):
                 # Add halo to the set under which the card is
                 radius = (card_set.size[0] + card_set.size[1]) // 50
