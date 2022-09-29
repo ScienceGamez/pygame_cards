@@ -223,6 +223,7 @@ clock = pygame.time.Clock()
 
 
 while 1:
+    # pygame.image.save(screen, "solitaire.png")
     screen.fill("black")
     time_delta = clock.tick(60) / 1000.0
 
@@ -232,7 +233,6 @@ while 1:
                 sys.exit()
             case pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    # pygame.image.save(screen, "solitaire.png")
 
                     sys.exit()
             case pygame_cards.events.CARD_MOVED:
