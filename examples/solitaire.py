@@ -230,8 +230,11 @@ while 1:
         match event.type:
             case pygame.QUIT:
                 sys.exit()
-            case pygame.KEYDOWN | pygame.K_ESCAPE:
-                sys.exit()
+            case pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    # pygame.image.save(screen, "solitaire.png")
+
+                    sys.exit()
             case pygame_cards.events.CARD_MOVED:
                 from_set = event.from_set
                 if isinstance(from_set, ClondikePileGaphics):

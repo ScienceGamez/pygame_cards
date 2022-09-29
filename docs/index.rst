@@ -27,6 +27,7 @@ The code is available on
    :caption: Contents:
 
    tutorial
+   examples
    existing_sets
    api
 
