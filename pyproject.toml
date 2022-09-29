@@ -27,3 +27,10 @@ dependencies = [
 [project.urls]
 "Homepage" = "https://github.com/ScienceGamez/pygame_cards"
 "Bug Tracker" = "https://github.com/ScienceGamez/pygame_cards/issues"
+"Documentation" = "https://pygame-cards.readthedocs.io/en/latest/"
+
+[project.optional-dependencies]
+doc = [
+    "sphinx",
+    "furo"
+]
