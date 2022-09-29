@@ -6,7 +6,7 @@ Solitaire
 ---------
 
 
-.. image:: ../examples/tutorial/images/solitaire.png
+.. image:: ./images/solitaire.png
   :alt: Example of the solitaire game
 
 
