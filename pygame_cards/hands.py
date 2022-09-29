@@ -71,11 +71,52 @@ class CardsetGraphic(AbstractGraphic):
             f"'get_card_at' in Class {type(self).__name__}"
         )
 
+    @abstractmethod
+    def get_cards_at(self, pos: tuple[int, int]) -> CardsSet | None:
+        """Return a cardset at the given pixel position.
+
+        This can be implemented for allowing moving multiple cards.
+        You will still have to implement :py:meth:`get_card_at`.
+        You will also need to set :py:attr:`drag_multiple_cards`
+        to True.
+        in :py:class:`CarsetRights`. The :py:class:`CardsManager`
+        will then use this method for selection.
+
+        :arg pos: The position inside the CardsetGraphic surface.
+        """
+        raise NotImplementedError(
+            f"'get_cards_at' in Class {type(self).__name__}"
+        )
+
     def remove_card(self, card: AbstractCard) -> None:
         """Remove a card from the cardset."""
 
         self.cardset.remove(card)
         self.clear_cache()
+
+    def pop_card(self, card_index: int) -> AbstractCard:
+        """Remove a card from the cardset.
+
+        :arg card_index: The index at which the card we want to
+            pop is.
+        :return card_at_index: The card at the desired index.
+        """
+
+        card = self.cardset.pop(card_index)
+        self.clear_cache()
+        return card
+
+    def remove_all_cards(self) -> CardsSet:
+        """Remove all cards from the cardset.
+
+        :return cards: A cardset with all the cards remaining.
+        """
+        cardset = CardsSet()
+        while self.cardset:
+            card = self.cardset.pop(0)
+            cardset.append(card)
+        self.clear_cache()
+        return cardset
 
     def append_card(self, card: AbstractCard) -> None:
         """Append a card to the cardset."""
@@ -83,6 +124,13 @@ class CardsetGraphic(AbstractGraphic):
         self.cardset.append(card)
         card.graphics.size = self.card_size
         card.graphics.clear_cache()
+        self.clear_cache()
+
+    def extend_cards(self, card_set: CardsSet) -> None:
+        self.cardset.extend(card_set)
+        for card in card_set:
+            card.graphics.size = self.card_size
+            card.graphics.clear_cache()
         self.clear_cache()
 
     def with_hovered(self, card: AbstractCard | None) -> pygame.Surface:
@@ -431,26 +479,164 @@ class RoundedHand(BaseHand):
 
 
 @dataclass
-class PlayingHand(BaseHand):
-    """A representation of the hand of the player.
+class Pile(CardsetGraphic):
+    """A pile has only its last/s card/s that can be selected.
 
-    This will show the cards how the player wants it.
+    :attr offset: The offset between cards."""
 
-    Currently only works with size and card_size being specified.
-    TODO: optimize by caching the variables.
+    offset: int = 30
+
+    def _get_card_index_at(self, pos: tuple[int, int]) -> int | None:
+        """Return the index of the card located at the current position."""
+        raise NotImplementedError(f"Must implement in {type(self).__name__}")
+
+    def get_card_at(self, pos: tuple[int, int]) -> AbstractCard | None:
+        """Return the card at the given pixel position
+
+        :arg pos: The position inside the CardsetGraphic surface.
+        """
+        idx = self._get_card_index_at(pos)
+
+        return None if idx is None else self.cardset[idx]
+
+    def get_cards_at(self, pos: tuple[int, int]) -> CardsSet | None:
+        """Return the card set at the given pixel position
+
+        :arg pos: The position inside the CardsetGraphic surface.
+        """
+        idx = self._get_card_index_at(pos)
+
+        return None if idx is None else self.cardset[idx:]
+
+
+@dataclass
+class VerticalPileGraphic(Pile):
+    """Show a column in cards aligned.
+
+    Cards are shown from first one to the last one on the bottom.
+
     """
 
-    @abstractmethod
-    def hovered(self, card: AbstractCard) -> pygame.Surface:
-        """Show the hand with the card hovered."""
+    size: tuple[int, int] = (175, 400)
 
-    @abstractmethod
-    def with_going_to_play(self, card: AbstractCard) -> pygame.Surface:
-        """Show the hand with the card that is going to be played.
+    def clear_cache(self) -> None:
+        # Remove the surface cache_property if exists
+        self.__dict__.pop("y_positions", None)
+        super().clear_cache()
 
-        This can be used for asking a confimation to the user,
-        or for aking a way to play the card.
-        """
+    @cached_property
+    def surface(self) -> pygame.Surface:
+
+        # Create the surface
+        surf = pygame.Surface(self.size, pygame.SRCALPHA)
+
+        # Calculate how we position the cards
+        n_cards = len(self.cardset)
+        if n_cards == 0:
+            return surf
+
+        x_position = (self.size[0] - self.card_size[0]) / 2
+
+        # Add the cards on the surface
+        surf.blits(
+            [
+                (card.graphics.surface, (x_position, y))
+                for card, y in zip(self.cardset, self.y_positions)
+            ],
+        )
+
+        return surf
+
+    @cached_property
+    def y_positions(self) -> list[int]:
+        n_cards = len(self.cardset)
+        expected_h = n_cards * self.offset + self.card_size[1]
+        h_space = (
+            (self.size[1] - self.card_size[1]) / n_cards
+            if expected_h > self.size[1]
+            else self.offset
+        )
+        return [i * h_space for i in range(n_cards)]
+
+    def _get_card_index_at(self, pos: tuple[int, int]) -> int | None:
+        """Return the index of the card located at the current position."""
+        if not self.cardset:
+            # No cards case
+            return None
+        # Iterate over the cards and position to find the correct card
+
+        for card_idx in range(len(self.cardset)):
+            if pos[1] < self.y_positions[card_idx]:
+                return card_idx - 1
+        if pos[1] < self.y_positions[-1] + self.card_size[1]:
+            # Last card is on top
+            return len(self.cardset) - 1
+        return None
+
+
+@dataclass
+class HorizontalPileGraphic(Pile):
+    """Show a cards horizontally aligned.
+
+    Cards are shown from first one to the last one on the bottom.
+
+    """
+
+    size: tuple[int, int] = (350, 240)
+
+    def clear_cache(self) -> None:
+        # Remove the surface cache_property if exists
+        self.__dict__.pop("x_positions", None)
+        super().clear_cache()
+
+    @cached_property
+    def surface(self) -> pygame.Surface:
+
+        # Create the surface
+        surf = pygame.Surface(self.size, pygame.SRCALPHA)
+
+        # Calculate how we position the cards
+        n_cards = len(self.cardset)
+        if n_cards == 0:
+            return surf
+
+        y_position = (self.size[1] - self.card_size[1]) / 2
+
+        # Add the cards on the surface
+        surf.blits(
+            [
+                (card.graphics.surface, (x, y_position))
+                for card, x in zip(self.cardset, self.x_positions)
+            ],
+        )
+
+        return surf
+
+    @cached_property
+    def x_positions(self) -> list[int]:
+        n_cards = len(self.cardset)
+        expected_h = n_cards * self.offset + self.card_size[0]
+        h_space = (
+            (self.size[0] - self.card_size[0]) / n_cards
+            if expected_h > self.size[0]
+            else self.offset
+        )
+        return [i * h_space for i in range(n_cards)]
+
+    def _get_card_index_at(self, pos: tuple[int, int]) -> int | None:
+        """Return the index of the card located at the current position."""
+        if not self.cardset:
+            # No cards case
+            return None
+        # Iterate over the cards and position to find the correct card
+
+        for card_idx in range(len(self.cardset)):
+            if pos[0] < self.x_positions[card_idx]:
+                return card_idx - 1
+        if pos[0] < self.x_positions[-1] + self.card_size[0]:
+            # Last card is on top
+            return len(self.cardset) - 1
+        return None
 
 
 if __name__ == "__main__":
@@ -492,7 +678,7 @@ if __name__ == "__main__":
         pos = pygame.mouse.get_pos()
         hoverd_card = graphics_aligned.get_card_at((pos[0] - 200, pos[1] - 0))
         screen.blit(
-            graphics_aligned.with_hovered(hoverd_card, fill_inside=False),
+            graphics_aligned.with_hovered(hoverd_card, fill_inside=True),
             (200, 0),
         )
         pygame.display.update()

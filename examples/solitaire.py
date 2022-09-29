@@ -1,14 +1,14 @@
-"""This is the first game we implement."""
-from ast import Num
+"""An example of game: solitaire-klondike."""
 from dataclasses import dataclass, field
 from functools import cached_property
 import sys
 import pygame
 
-from pygame_cards.back import CARD_BACK
-from pygame_cards.hands import AlignedHand
+from pygame_cards.hands import (
+    HorizontalPileGraphic,
+    VerticalPileGraphic,
+)
 from pygame_cards.manager import CardSetRights, CardsManager
-from pygame_cards.hands import CardsetGraphic
 from pygame_cards.deck import CardBackOwner, Deck
 
 from pygame_cards.set import CardsSet
@@ -21,7 +21,6 @@ pygame.init()
 
 
 screen = pygame.display.set_mode(flags=pygame.FULLSCREEN)
-# screen = pygame.display.set_mode((400, 300))
 size = width, height = screen.get_size()
 
 
@@ -29,15 +28,11 @@ manager = CardsManager()
 
 
 @dataclass
-class ClondikePileGaphics(CardBackOwner):
+class ClondikePileGaphics(VerticalPileGraphic, CardBackOwner):
     """Show a column in clondike.
 
     All cards are hidden but the last one is shown.
-
-    :attr v_offset: The offset between cards in vertical.
     """
-
-    v_offset: int = 30
 
     _n_cards_hidden: pygame.Surface = field(init=False)
 
@@ -45,11 +40,6 @@ class ClondikePileGaphics(CardBackOwner):
         super().__post_init__()
 
         self._n_cards_hidden = len(self.cardset) - 1
-
-    def clear_cache(self) -> None:
-        # Remove the surface cache_property if exists
-        self.__dict__.pop("y_positions", None)
-        super().clear_cache()
 
     @cached_property
     def surface(self) -> pygame.Surface:
@@ -75,26 +65,16 @@ class ClondikePileGaphics(CardBackOwner):
 
         return surf
 
-    @cached_property
-    def y_positions(self) -> list[int]:
-        n_cards = len(self.cardset)
-        expected_h = n_cards * self.v_offset + self.card_size[1]
-        h_space = (
-            (self.size[1] - self.card_size[1]) / n_cards
-            if expected_h > self.size[1]
-            else self.v_offset
-        )
-        return [i * h_space for i in range(n_cards)]
-
-    def get_card_at(self, pos: tuple[int, int]) -> AbstractCard:
-        """Return the card at the given pixel position
-
-        :arg pos: The position inside the CardsetGraphic surface.
-        """
-        if self.cardset:
-            return self.cardset[-1]
-        else:
+    def _get_card_index_at(self, pos: tuple[int, int]) -> int | None:
+        idx = super()._get_card_index_at(pos)
+        if (
+            idx is None
+            or self._n_cards_hidden >= len(self.cardset)
+            or idx < self._n_cards_hidden
+        ):
             return None
+        else:
+            return idx
 
     def remove_card(self, card: AbstractCard) -> None:
 
@@ -180,14 +160,49 @@ for pile in range(N_PILES):
     manager.add_set(
         this_pile_graphics,
         # Position on the screen
-        (pile_size[0] * (pile + 1), height * 0.2),
+        (pile_size[0] * (pile + 1), card_size[1] * 1.5),
         CardSetRights(
             draggable_in=this_pile_graphics.can_put,
             draggable_out=True,
             highlight_hovered_card=True,
             clickable=True,
+            drag_multiple_cards=True,
         ),
     )
+
+deck = Deck(
+    CardsSet(card_set[next_card_idx:]),
+    card_size=card_size,
+    size=(card_size[0] + 40, card_size[1] + 40),
+)
+
+temp_3_cards = HorizontalPileGraphic(
+    CardsSet(),
+    card_size=card_size,
+    size=(2 * card_size[0], card_size[1] + 40),
+)
+# Will store the 3 cards group
+temp_3_cards_storage: list[CardsSet] = []
+
+manager.add_set(
+    deck,
+    (screen.get_size()[0] - deck.size[1] - deck.card_border_radius, 50),
+    CardSetRights(
+        clickable=True,
+        draggable_in=False,
+        draggable_out=False,
+    ),
+)
+manager.add_set(
+    temp_3_cards,
+    (screen.get_size()[0] - 2 * deck.size[1] - deck.card_border_radius, 50),
+    CardSetRights(
+        clickable=True,
+        draggable_in=False,
+        # Only the last card can be used
+        draggable_out=lambda card: card == temp_3_cards.cardset[-1],
+    ),
+)
 
 depots: dict[Colors, ClondikeDepotPileGaphics] = {}
 for i, color in enumerate(Colors):
@@ -196,7 +211,7 @@ for i, color in enumerate(Colors):
     )
     manager.add_set(
         depot,
-        (i * card_size[0] * 1.5, 0),
+        (30 + i * card_size[0] * 1.3, 50),
         CardSetRights(draggable_in=depot.can_put, draggable_out=False),
     )
     depots[color] = depot
@@ -221,11 +236,18 @@ while 1:
                 from_set = event.from_set
                 if isinstance(from_set, ClondikePileGaphics):
                     from_set.turn_top_card()
+                if (
+                    from_set == temp_3_cards
+                    and len(temp_3_cards.cardset) == 0
+                    and len(temp_3_cards_storage) > 0
+                ):
+                    # In case the 3 card storage is empty, take the old cards
+                    temp_3_cards.extend_cards(temp_3_cards_storage.pop(-1))
             case pygame_cards.events.CARDSSET_CLICKED:
                 card = event.card
                 set = event.set
-                if isinstance(card, NumberCard) and isinstance(
-                    set, ClondikePileGaphics
+                if isinstance(card, NumberCard) and (
+                    isinstance(set, ClondikePileGaphics) or set == temp_3_cards
                 ):
                     # Check if it can be stored in the packs
                     depot = depots[card.color]
@@ -233,7 +255,23 @@ while 1:
 
                         depot.append_card(card)
                         set.remove_card(card)
-                        set.turn_top_card()
+                        if isinstance(set, ClondikePileGaphics):
+                            set.turn_top_card()
+
+                if set == deck:
+                    if len(deck.cardset) == 0:
+                        while temp_3_cards_storage:
+                            deck.extend_cards(temp_3_cards_storage.pop(0))
+                        deck.extend_cards(temp_3_cards.remove_all_cards())
+
+                    else:
+                        if temp_3_cards.cardset:
+                            # Put away the cards
+                            temp_3_cards_storage.append(
+                                temp_3_cards.cardset.draw(-1)
+                            )
+                        cards = deck.draw_cards(min(3, len(deck.cardset)))
+                        temp_3_cards.extend_cards(cards)
 
         manager.process_events(event)
 

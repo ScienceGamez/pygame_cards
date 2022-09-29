@@ -13,6 +13,7 @@ from pygame_cards.hands import (
     BaseHand,
     CardsetGraphic,
     RoundedHand,
+    VerticalPileGraphic,
 )
 
 from pygame_cards.set import CardsSet
@@ -35,15 +36,19 @@ class CardSetRights:
     """
 
     clickable: bool = False
-    draggable_out: bool = True
+    draggable_out: bool | Callable[[Card], bool] = True
     draggable_in: bool | Callable[[Card], bool] = True
     highlight_hovered_card: bool = True
+    drag_multiple_cards: bool = False
 
     def __post_init__(self):
         # Convert to a function
         if isinstance(self.draggable_in, bool):
             drag_in = self.draggable_in
             self.draggable_in = lambda card: drag_in
+        if isinstance(self.draggable_out, bool):
+            drag_out = self.draggable_out
+            self.draggable_out = lambda card: drag_out
 
 
 class CardsManager(Manager):
@@ -71,12 +76,15 @@ class CardsManager(Manager):
     last_card_under_mouse: Card | None = None
 
     # For handling internal events
+    _clicked: bool = False
     _is_aquiring_card: bool = False
     _stop_aquiring_card: bool = False
     _cardset_under_mouse: CardsetGraphic | None = None
     _card_under_mouse: Card | None = None
     _card_under_acquisition: Card | None = None
+    _cardset_under_acquisition: CardsSet | None = None
     _cardset_of_acquisition: CardsSet | None = None
+    _graphics_cardset_under_acquisition: VerticalPileGraphic | None = None
 
     def __init__(self) -> None:
         super().__init__()
@@ -108,10 +116,14 @@ class CardsManager(Manager):
                 # Check if we started to acquire a card
                 self._is_aquiring_card = True
             case pygame.event.EventType(type=pygame.MOUSEBUTTONUP):
-                if self._card_under_acquisition is not None:
+                if (
+                    self._card_under_acquisition is not None
+                    or self._cardset_under_acquisition is not None
+                ):
                     self._stop_aquiring_card = True
                 else:
                     self._is_aquiring_card = False
+                    self._clicked = True
 
     def update(self, time: int) -> bool:
         """Update the manager with the new time.
@@ -138,6 +150,7 @@ class CardsManager(Manager):
             # Try to find the card under the mouse
             self._cardset_under_mouse = None
             self._card_under_mouse = None
+            self._cardset_under_mouse = None
             for card_set in reversed(cardsets_under_mouse):
                 self._cardset_under_mouse = card_set
                 position = self._card_sets_positions[
@@ -147,6 +160,12 @@ class CardsManager(Manager):
                     self.last_mouse_pos[0] - position[0],
                     self.last_mouse_pos[1] - position[1],
                 )
+
+                if self.get_cardset_rights(card_set).drag_multiple_cards:
+                    sub_card_set = card_set.get_cards_at(mousepos_in_set)
+                    if sub_card_set is not None:
+                        self._subcardset_under_mouse = sub_card_set
+
                 card = card_set.get_card_at(mousepos_in_set)
                 if card is not None:
                     # Card was found
@@ -166,44 +185,75 @@ class CardsManager(Manager):
                 pygame.event.post(clicked_event)
             # Single click done
             self._is_aquiring_card, self._stop_aquiring_card = False, False
-
         if (
             self._is_aquiring_card
             and self._card_under_mouse is not None
             and self._card_under_acquisition is None
+            and self._cardset_under_acquisition is None
         ):
             _card_set_rights = self._card_sets_rigths[
                 self.card_sets.index(self._cardset_under_mouse)
             ]
-            if _card_set_rights.draggable_out:
+            if _card_set_rights.draggable_out(self._card_under_mouse):
                 # User starts to aquire a card
-                self._card_under_acquisition = self._card_under_mouse
                 self._cardset_of_acquisition = self._cardset_under_mouse
+                if _card_set_rights.drag_multiple_cards:
+                    self._cardset_under_acquisition = (
+                        self._subcardset_under_mouse
+                    )
+                    self.logger.debug(
+                        f"Under acquisition {self._cardset_under_acquisition}"
+                    )
+                    for card in self._cardset_under_acquisition:
+                        self._cardset_of_acquisition.remove_card(card)
+                        card.graphics.clear_cache()
+                else:
+                    self._card_under_acquisition = self._card_under_mouse
 
-                self.logger.debug(
-                    f"Under acquisition {self._card_under_acquisition}"
-                )
-                self._cardset_of_acquisition.remove_card(
-                    self._card_under_acquisition
-                )
+                    self.logger.debug(
+                        f"Under acquisition {self._card_under_acquisition}"
+                    )
+                    self._cardset_of_acquisition.remove_card(
+                        self._card_under_acquisition
+                    )
 
-                self._card_under_acquisition.graphics.clear_cache()
+                    self._card_under_acquisition.graphics.clear_cache()
 
             # self._cardset_under_mouse = None
             self._card_under_mouse = None
+            self._subcardset_under_mouse = None
             self._is_aquiring_card = False
 
         if self._stop_aquiring_card:
             # Card released
-            if self._cardset_under_mouse == self._cardset_of_acquisition:
-                # Check for click event
-                pygame.event.post(
-                    cardsset_clicked(
-                        self._cardset_under_mouse, self._card_under_acquisition
+            if (
+                self._cardset_under_mouse == self._cardset_of_acquisition
+                and self.get_cardset_rights(
+                    self._cardset_under_mouse
+                ).clickable
+            ):
+                if self._card_under_acquisition:
+                    # Check for click event
+                    pygame.event.post(
+                        cardsset_clicked(
+                            self._cardset_under_mouse,
+                            self._card_under_acquisition,
+                        )
                     )
-                )
+                if (
+                    self._cardset_under_acquisition
+                    and len(self._cardset_under_acquisition) == 1
+                ):
+                    pygame.event.post(
+                        cardsset_clicked(
+                            self._cardset_under_mouse,
+                            self._cardset_under_acquisition[0],
+                        )
+                    )
+
             if (
                 self._cardset_under_mouse is not None
+                and self._card_under_acquisition is not None
                 and self.get_cardset_rights(
                     self._cardset_under_mouse
                 ).draggable_in(self._card_under_acquisition)
@@ -219,21 +269,58 @@ class CardsManager(Manager):
                         self._cardset_under_mouse,
                     )
                 )
-            else:
+            elif (
+                self._cardset_under_mouse is not None
+                and self._cardset_under_acquisition
+                and self.get_cardset_rights(
+                    self._cardset_under_mouse
+                ).draggable_in(self._cardset_under_acquisition[0])
+            ):
+                for card in self._cardset_under_acquisition:
+                    self._cardset_under_mouse.append_card(card)
+
+                    pygame.event.post(
+                        card_moved(
+                            card,
+                            self._cardset_of_acquisition,
+                            self._cardset_under_mouse,
+                        )
+                    )
+            elif self._card_under_acquisition is not None:
                 self._cardset_of_acquisition.append_card(
                     self._card_under_acquisition
                 )
+            elif self._cardset_under_acquisition:
+                self._cardset_of_acquisition.extend_cards(
+                    self._cardset_under_acquisition
+                )
+            else:
+                logging.warning(f"Unexpected behaviour in {self}")
 
             self._cardset_of_acquisition = None
             self._card_under_acquisition = None
+            self._graphics_cardset_under_acquisition = None
+            self._cardset_under_acquisition = None
             self._stop_aquiring_card = False
 
+        if (
+            self._clicked
+            and self._cardset_under_mouse is not None
+            and self.get_cardset_rights(self._cardset_under_mouse).clickable
+        ):
+            pygame.event.post(
+                cardsset_clicked(
+                    self._cardset_under_mouse,
+                    self._card_under_mouse,
+                )
+            )
         # Update the mouse position and speed
         self.mouse_speed = (
             mouse_pos[0] - self.last_mouse_pos[0],
             mouse_pos[1] - self.last_mouse_pos[1],
         )
         self.last_mouse_pos = mouse_pos
+        self._clicked = False
 
     def get_cardset_rights(self, cards_set: CardsetGraphic) -> CardSetRights:
         return self._card_sets_rigths[self.card_sets.index(cards_set)]
@@ -280,7 +367,7 @@ class CardsManager(Manager):
                 )
         if self._card_under_acquisition is not None:
 
-            # Plo the card under acquisition
+            # Plot the card under acquisition
             card_surf = self._card_under_acquisition.graphics.surface
             if rotate_moving_card:
                 # Angle is proportional to speed
@@ -291,6 +378,27 @@ class CardsManager(Manager):
                 (
                     self.last_mouse_pos[0] - card_surf.get_size()[0] / 2,
                     self.last_mouse_pos[1] - card_surf.get_size()[1] * 0.1,
+                ),
+            )
+
+        if self._cardset_under_acquisition:
+            # Plot the cardset under acquisition
+            card_size = self._cardset_under_acquisition[0].graphics.size
+            if self._graphics_cardset_under_acquisition is None:
+                self._graphics_cardset_under_acquisition = VerticalPileGraphic(
+                    self._cardset_under_acquisition, card_size=card_size
+                )
+            graphic = self._graphics_cardset_under_acquisition
+            surf = graphic.surface
+            if rotate_moving_card:
+                # Angle is proportional to speed
+                angle = self.mouse_speed[0] * 0.5
+                surf = pygame.transform.rotate(surf, -angle)
+            window.blit(
+                surf,
+                (
+                    self.last_mouse_pos[0] - card_size[0] / 2,
+                    self.last_mouse_pos[1] - card_size[1] * 0.1,
                 ),
             )
 

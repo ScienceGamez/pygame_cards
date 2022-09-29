@@ -10,6 +10,7 @@ from pygame_cards.effects import outer_border, outer_halo
 from pygame_cards.hands import CardsetGraphic
 
 from pygame_emojis import load_svg
+from pygame_cards.set import CardsSet
 
 from pygame_cards.utils import DEFAULT_CARDBACK
 
@@ -76,6 +77,7 @@ class Deck(CardBackOwner):
     """Graphics for a deck."""
 
     size: tuple[int, int] = (160, 230)
+    visible: bool = False
 
     def __post_init__(self):
         super().__post_init__()
@@ -106,7 +108,7 @@ class Deck(CardBackOwner):
         # Blit all cards at their positions
         for card, x, y in zip(self.cardset, x_positions, y_positions):
             surf.blit(
-                self.card_back,
+                card.graphics.surface if self.visible else self.card_back,
                 (x, y)
                 # (
                 #    (self.size[0] - self.card_size[0]) // 2,
@@ -121,6 +123,11 @@ class Deck(CardBackOwner):
         else:
             # Empty set
             return None
+
+    def draw_cards(self, n_cards: int = 1) -> CardsSet:
+        cards = self.cardset.draw(n_cards)
+        self.clear_cache()
+        return cards
 
 
 if __name__ == "__main__":
