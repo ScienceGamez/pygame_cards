@@ -386,7 +386,9 @@ class CardsManager(Manager):
             card_size = self._cardset_under_acquisition[0].graphics.size
             if self._graphics_cardset_under_acquisition is None:
                 self._graphics_cardset_under_acquisition = VerticalPileGraphic(
-                    self._cardset_under_acquisition, card_size=card_size
+                    self._cardset_under_acquisition,
+                    size=(card_size[0], card_size[1] * 3),
+                    card_size=card_size,
                 )
             graphic = self._graphics_cardset_under_acquisition
             surf = graphic.surface
@@ -397,7 +399,12 @@ class CardsManager(Manager):
             window.blit(
                 surf,
                 (
-                    self.last_mouse_pos[0] - card_size[0] / 2,
+                    self.last_mouse_pos[0]
+                    + (
+                        card_size[0] / 2 - surf.get_width()
+                        if angle > 0
+                        else -card_size[0] / 2
+                    ),
                     self.last_mouse_pos[1] - card_size[1] * 0.1,
                 ),
             )
