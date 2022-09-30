@@ -4,11 +4,21 @@ from pygame import Surface
 
 import pygame_cards
 
+from urllib.request import urlretrieve
+
 
 DEFAULT_CARDBACK = Path(
     *pygame_cards.__path__,
-    "images/DALL·E 2022-08-25 13.56.20 - funny happy python, digital art.png",
+    "images/DEFAULT_CARDBACK.png",
 )
+if not DEFAULT_CARDBACK.is_file():
+    DEFAULT_CARDBACK.parent.mkdir(parents=True, exist_ok=True)
+
+    urlretrieve(
+        "https://github.com/ScienceGamez/pygame_cards/raw/master/"
+        "pygame_cards/images/DEFAULT_CARDBACK.png",
+        DEFAULT_CARDBACK,
+    )
 
 
 class AutoName(Enum):

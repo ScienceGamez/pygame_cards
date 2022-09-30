@@ -43,8 +43,10 @@ class CardBackOwner(CardsetGraphic):
                 _card_back = pygame.Surface(self.card_size)
                 _card_back.fill("white")
                 _card_back.blit(load_svg(card_back, self.card_size), (0, 0))
-            else:
+            elif Path(card_back).is_file():
                 _card_back = pygame.image.load(card_back)
+            else:
+                raise FileNotFoundError(card_back)
         elif isinstance(card_back, pygame.Surface):
             _card_back = card_back
         else:

@@ -34,3 +34,6 @@ doc = [
     "sphinx",
     "furo"
 ]
+
+[tool.setuptools.package-data]
+"pygame_cards.images" = ["*.png"]
