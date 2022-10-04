@@ -3,12 +3,19 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to pygame Cards's documentation!
-========================================
+pygame_cards
+============
 
 
-If you want to use standard playing cards, you can have a look
-to the implemented cards.
+pygame_cards is a Python package based on pygame that helps you creating
+a card game.
+
+You can have a look to the tutorial or to examples.
+
+pygame_cards includes standard playing cards,
+but also let you design your own cards.
+
+It also has support for things like dices or poker chips.
 
 
 To install you can simply do
@@ -29,6 +36,7 @@ The code is available on
    tutorial
    examples
    existing_sets
+   tokens
    api
 
 

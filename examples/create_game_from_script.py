@@ -1,4 +1,8 @@
-"""Create a game from a script."""
+"""Create a game from a script.
+
+This shows how to use pyinstaller to install a game that you
+can run normally just with a python script.
+"""
 
 from pathlib import Path
 import shutil

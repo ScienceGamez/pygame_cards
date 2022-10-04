@@ -1,4 +1,5 @@
 from __future__ import annotations
+from abc import abstractproperty
 from dataclasses import dataclass, field
 import logging
 import threading
@@ -112,6 +113,10 @@ class AbstractGraphic:
 
         # Remove the surface cache_property if exists
         self.__dict__.pop("surface", None)
+
+    @abstractproperty
+    def surface(self) -> pygame.Surface:
+        ...
 
 
 @dataclass

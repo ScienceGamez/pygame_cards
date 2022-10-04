@@ -85,9 +85,10 @@ class CardsSet(list[AbstractCard]):
     def draw(self, n_cards: int) -> CardsSet:
         """Draw the n first cards from the set.
 
-        To draw the first card of the set you can use the :py:meth:`pop(0)`.
+        To draw the first card of the set you can use the :py:meth:`pop(0)` .
+
         :arg n_cards: The number of cards to draw.
-            If -1: will draw all the cards
+            If -1, will draw all the cards
         """
         if n_cards == -1:
             n_cards = len(self)
