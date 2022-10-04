@@ -5,9 +5,10 @@ Examples
 Solitaire
 ---------
 
+This is an example of how a game of solitaire was created
+using pygame.
 
-.. image:: ./images/solitaire.png
-  :alt: Example of the solitaire game
+.. image:: images/solitaire.png
 
 
 If you can check the
