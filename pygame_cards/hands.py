@@ -272,17 +272,19 @@ class AlignedHand(BaseHand):
         """
         s = self.surface.get_size()
         if not (pos[0] < s[0] and pos[1] < s[1]):
-            self.logger.error(f"get_card_at:{pos=} not in {s}.")
+            self.logger.error(f"get_card_at({pos=}) not in {s}.")
             return None
 
         x_positions, offset = self.calculate_x_positions()
-        self.logger.debug(f"get_card_at:{x_positions=}, {self.overlap_hide=}")
+        self.logger.debug(
+            f"get_card_at({pos=}): {x_positions=}, {self.overlap_hide=}"
+        )
 
         # TODO: make this work
         for card_index, x_pos in enumerate(x_positions):
             if pos[0] < x_pos or pos[0] > x_pos + self.card_size[0]:
                 self.logger.debug(
-                    f"get_card_at: {card_index=} is not Between the card boundaries"
+                    f"get_card_at({pos=}):: {card_index=} is not Between the card boundaries"
                 )
                 continue
             if (
@@ -294,14 +296,16 @@ class AlignedHand(BaseHand):
                 and pos[0] - x_pos < self.offset_position
             ):
                 self.logger.debug(
-                    f"get_card_at: {card_index=} is  going to be under the next card"
+                    f"get_card_at({pos=}):: {card_index=} is  going to be under the next card"
                 )
                 continue
             if x_pos - pos[0] > self.card_size[0] + offset:
-                self.logger.debug(f"get_card_at:{pos=} is in offset.")
+                self.logger.debug(f"get_card_at({pos=}): is in offset.")
                 continue  # Between two cards, in the offset
 
-            self.logger.debug(f"get_card_at:{pos=} found index {card_index}.")
+            self.logger.debug(
+                f"get_card_at({pos=}): found index {card_index}."
+            )
             return self.cardset[card_index]
 
         return None

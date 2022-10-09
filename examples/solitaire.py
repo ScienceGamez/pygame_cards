@@ -143,7 +143,7 @@ pile_size = (width / (N_PILES + 2), height * 0.8)
 card_size = (pile_size[0] * 0.8, pile_size[1] / 3)
 
 # Get the card set of each pile
-piles_card_sets = []
+piles_card_sets: list[CardSets] = []
 piles_graphics = []
 card_idx = 0
 for pile in range(N_PILES):
@@ -200,7 +200,9 @@ manager.add_set(
         clickable=True,
         draggable_in=False,
         # Only the last card can be used
-        draggable_out=lambda card: card == temp_3_cards.cardset[-1],
+        draggable_out=lambda card: card == temp_3_cards.cardset[-1]
+        if temp_3_cards.cardset
+        else True,
     ),
 )
 
@@ -221,11 +223,13 @@ pygame.display.flip()
 
 clock = pygame.time.Clock()
 
-
+tick = 0
 while 1:
     # pygame.image.save(screen, "solitaire.png")
     screen.fill("black")
     time_delta = clock.tick(60) / 1000.0
+
+    tick += 1
 
     for event in pygame.event.get():
         match event.type:
@@ -275,9 +279,10 @@ while 1:
                             )
                         cards = deck.draw_cards(min(3, len(deck.cardset)))
                         temp_3_cards.extend_cards(cards)
-
+        print(tick, event)
         manager.process_events(event)
 
+    print(piles_card_sets[0])
     manager.update(time_delta)
     manager.draw(screen)
     pygame.display.flip()

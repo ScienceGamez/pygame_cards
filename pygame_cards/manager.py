@@ -85,6 +85,7 @@ class CardsManager(Manager):
     _cardset_under_acquisition: CardsSet | None = None
     _cardset_of_acquisition: CardsSet | None = None
     _graphics_cardset_under_acquisition: VerticalPileGraphic | None = None
+    mouse_pos = None
 
     def __init__(self) -> None:
         super().__init__()
@@ -115,6 +116,7 @@ class CardsManager(Manager):
             case pygame.event.EventType(type=pygame.MOUSEBUTTONDOWN):
                 # Check if we started to acquire a card
                 self._is_aquiring_card = True
+                self.mouse_pos = event.pos
             case pygame.event.EventType(type=pygame.MOUSEBUTTONUP):
                 if (
                     self._card_under_acquisition is not None
@@ -124,6 +126,7 @@ class CardsManager(Manager):
                 else:
                     self._is_aquiring_card = False
                     self._clicked = True
+                self.mouse_pos = event.pos
 
     def update(self, time: int) -> bool:
         """Update the manager with the new time.
@@ -132,9 +135,11 @@ class CardsManager(Manager):
 
         :return whether the surface was updated.
         """
-        mouse_pos = pygame.mouse.get_pos()
+        if self.mouse_pos is None:
+            # update the mouse pos if not in an event
+            self.mouse_pos = pygame.mouse.get_pos()
 
-        if self.last_mouse_pos != mouse_pos:
+        if self.last_mouse_pos != self.mouse_pos:
 
             # Find the card set under the mouse
             cardsets_under_mouse = [
@@ -144,21 +149,24 @@ class CardsManager(Manager):
                 )
                 if card_set.surface.get_rect()
                 .move(*position)
-                .collidepoint(mouse_pos)
+                .collidepoint(self.mouse_pos)
             ]
+            self.logger.debug(f"{cardsets_under_mouse = }")
 
             # Try to find the card under the mouse
             self._cardset_under_mouse = None
             self._card_under_mouse = None
-            self._cardset_under_mouse = None
             for card_set in reversed(cardsets_under_mouse):
                 self._cardset_under_mouse = card_set
                 position = self._card_sets_positions[
                     self.card_sets.index(card_set)
                 ]
                 mousepos_in_set = (
-                    self.last_mouse_pos[0] - position[0],
-                    self.last_mouse_pos[1] - position[1],
+                    self.mouse_pos[0] - position[0],
+                    self.mouse_pos[1] - position[1],
+                )
+                self.logger.debug(
+                    f"{mousepos_in_set = }, {self.mouse_pos = } - {position = }"
                 )
 
                 if self.get_cardset_rights(card_set).drag_multiple_cards:
@@ -171,6 +179,9 @@ class CardsManager(Manager):
                     # Card was found
                     self._card_under_mouse = card
                     break
+            self.logger.debug(f"{cardsets_under_mouse = }")
+            self.logger.debug(f"{self._cardset_under_mouse = }")
+            self.logger.debug(f"{self._card_under_mouse = }")
 
         if self._is_aquiring_card and self._stop_aquiring_card:
             # Was a single click
@@ -316,10 +327,11 @@ class CardsManager(Manager):
             )
         # Update the mouse position and speed
         self.mouse_speed = (
-            mouse_pos[0] - self.last_mouse_pos[0],
-            mouse_pos[1] - self.last_mouse_pos[1],
+            self.mouse_pos[0] - self.last_mouse_pos[0],
+            self.mouse_pos[1] - self.last_mouse_pos[1],
         )
-        self.last_mouse_pos = mouse_pos
+        self.last_mouse_pos = self.mouse_pos
+        self.mouse_pos = None
         self._clicked = False
 
     def get_cardset_rights(self, cards_set: CardsetGraphic) -> CardSetRights:
