@@ -28,6 +28,10 @@ class TestEventsForTests(unittest.TestCase):
 class TestCardsManager(unittest.TestCase):
     """Test that the card manager produces correct pygame.Events."""
 
+    click_pos = (15, 15)
+    down_event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"pos": click_pos})
+    up_event = pygame.event.Event(pygame.MOUSEBUTTONUP, {"pos": click_pos})
+
     def setUp(self) -> None:
         super().setUp()
         self.manager = CardsManager()
@@ -60,23 +64,30 @@ class TestCardsManager(unittest.TestCase):
             (10, 10),
             card_set_rights=CardSetRights(clickable=True),
         )
-        click_pos = (15, 15)
-        down_event = pygame.event.Event(
-            pygame.MOUSEBUTTONDOWN, {"pos": click_pos}
-        )
-        up_event = pygame.event.Event(pygame.MOUSEBUTTONUP, {"pos": click_pos})
 
-        self.manager.process_events(down_event)
+        self.manager.process_events(self.down_event)
         # self.assertTrue(self.manager._is_aquiring_card)
-        self.manager.process_events(up_event)
+        self.manager.process_events(self.up_event)
         # self.assertTrue(self.manager._clicked)
 
-        self.manager.update(0.2)
+        self.manager.update(2)
         # self.assertEqual(self.manager.last_mouse_pos, click_pos)
         # self.assertEqual(self.manager._card_under_mouse, test_card_set[0])
 
         clicked_events = pygame.event.get([CARDSSET_CLICKED])
         self.assertEqual(len(clicked_events), 1)
+        clicked_events_after = pygame.event.get([CARDSSET_CLICKED])
+        self.assertEqual(len(clicked_events_after), 0)
+
+    def test_click_long_dont_click(self):
+        """Test that if the click is too long it is not a click event."""
+        self.test_click()
+        self.manager.process_events(self.down_event)
+        self.manager.update(self.manager.click_time + 1)
+        self.manager.process_events(self.up_event)
+        self.manager.update(1)
+        clicked_events = pygame.event.get([CARDSSET_CLICKED])
+        self.assertEqual(len(clicked_events), 0)
 
     def test_dragging(self):
         # TODO implement

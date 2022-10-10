@@ -86,12 +86,20 @@ class CardsManager(Manager):
     _cardset_of_acquisition: CardsSet | None = None
     _graphics_cardset_under_acquisition: VerticalPileGraphic | None = None
     mouse_pos = None
+    _current_time: int = 0
+    _time_last_down: int = 0
 
-    def __init__(self) -> None:
+    def __init__(self, click_time: int = 150) -> None:
+        """Create a manager.
+
+        :arg click_time: The time you need from the mousebutton down
+            to the mouse button up [ms]
+        """
         super().__init__()
         self.card_sets = []
         self._card_sets_positions = []
         self._card_sets_rigths = []
+        self.click_time = click_time
 
     def add_set(
         self,
@@ -117,6 +125,7 @@ class CardsManager(Manager):
                 # Check if we started to acquire a card
                 self._is_aquiring_card = True
                 self.mouse_pos = event.pos
+                self._time_last_down = self._current_time
             case pygame.event.EventType(type=pygame.MOUSEBUTTONUP):
                 if (
                     self._card_under_acquisition is not None
@@ -133,8 +142,11 @@ class CardsManager(Manager):
 
         Has to be called after process events.
 
+        :arg time: The time since the last update.
+            in ms.
         :return whether the surface was updated.
         """
+
         if self.mouse_pos is None:
             # update the mouse pos if not in an event
             self.mouse_pos = pygame.mouse.get_pos()
@@ -188,7 +200,9 @@ class CardsManager(Manager):
             _card_set_rights = self._card_sets_rigths[
                 self.card_sets.index(self._cardset_under_mouse)
             ]
-            if _card_set_rights.clickable:
+            if _card_set_rights.clickable and (
+                (self._current_time - self._time_last_down) <= self.click_time
+            ):
                 # Post an event in the loop
                 clicked_event = cardsset_clicked(
                     self._cardset_under_mouse, self._card_under_mouse
@@ -196,6 +210,7 @@ class CardsManager(Manager):
                 pygame.event.post(clicked_event)
             # Single click done
             self._is_aquiring_card, self._stop_aquiring_card = False, False
+
         if (
             self._is_aquiring_card
             and self._card_under_mouse is not None
@@ -242,6 +257,10 @@ class CardsManager(Manager):
                 and self.get_cardset_rights(
                     self._cardset_under_mouse
                 ).clickable
+                and (
+                    (self._current_time - self._time_last_down)
+                    <= self.click_time
+                )
             ):
                 if self._card_under_acquisition:
                     # Check for click event
@@ -333,6 +352,7 @@ class CardsManager(Manager):
         self.last_mouse_pos = self.mouse_pos
         self.mouse_pos = None
         self._clicked = False
+        self._current_time += time
 
     def get_cardset_rights(self, cards_set: CardsetGraphic) -> CardSetRights:
         return self._card_sets_rigths[self.card_sets.index(cards_set)]

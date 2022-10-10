@@ -227,7 +227,7 @@ tick = 0
 while 1:
     # pygame.image.save(screen, "solitaire.png")
     screen.fill("black")
-    time_delta = clock.tick(60) / 1000.0
+    time_delta = clock.tick(60)
 
     tick += 1
 
@@ -279,10 +279,9 @@ while 1:
                             )
                         cards = deck.draw_cards(min(3, len(deck.cardset)))
                         temp_3_cards.extend_cards(cards)
-        print(tick, event)
+
         manager.process_events(event)
 
-    print(piles_card_sets[0])
     manager.update(time_delta)
     manager.draw(screen)
     pygame.display.flip()
