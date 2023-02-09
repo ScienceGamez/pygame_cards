@@ -5,7 +5,7 @@ from enum import auto
 from math import sqrt
 import pygame
 
-from pywonders.cards.effect import AutoName
+from pygame_cards.utils import AutoName
 
 
 class Decay(AutoName):
