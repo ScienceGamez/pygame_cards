@@ -5,8 +5,15 @@ import logging
 from pathlib import Path
 import random
 from typing import Type
-from pygame_cards.abstract import AbstractCard
+from pygame_cards.abstract import AbstractCard, AbstractGraphic
 from pygame_cards.io.utils import to_json
+
+_CARDSET_ID_GENERATOR = itertools.count()
+
+class CardsSetGraphic(AbstractGraphic):
+    """Graphic representation of a set of cards."""
+
+    ...
 
 
 class CardsSet(list[AbstractCard]):
@@ -19,7 +26,27 @@ class CardsSet(list[AbstractCard]):
     :py:class:`~pygame_cards.abstract.AbstractCardGraphics`
     for the graphics.
     """
+    _graphics: CardsSetGraphic | None = None
 
+    def __init__(self, *args: AbstractCard) -> None:
+        super().__init__(*args)
+        self.u_id = next(_CARDSET_ID_GENERATOR)
+
+    def __hash__(self) -> int:
+        return hash(f"cs_{self.u_id}")
+
+    def __repr__(self) -> str:
+        return f"{type(self)}({super().__repr__()})"
+
+    # override the [] method with slicing
+    def __getitem__(self, index: int | slice) -> AbstractCard:
+        if isinstance(index, int):
+            return super().__getitem__(index)
+        elif isinstance(index, slice):
+            return type(self)(super().__getitem__(index))
+        else:
+            raise TypeError(f"Invalid index type: {type(index)}")
+        
     # creation methods
     @classmethod
     def generate(cls) -> CardsSet:
@@ -213,6 +240,7 @@ class CardsSet(list[AbstractCard]):
 
         return None
 
+    # io methods
     def to_json(self, file: Path) -> None:
         """Save the cards set as a json file."""
 
@@ -220,3 +248,16 @@ class CardsSet(list[AbstractCard]):
 
         with file.open("w+") as f:
             json.dump(to_json(self), f)
+
+    
+    # Graphic methods 
+    @property
+    def graphics(self) -> CardsSetGraphic:
+        if self._graphics is None:
+            raise NotImplementedError(f"No graphics set for {self}")
+        
+        return self._graphics
+
+    @graphics.setter
+    def graphics(self, value: CardsSetGraphic) -> None:
+        self._graphics = value

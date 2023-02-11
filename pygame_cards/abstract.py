@@ -116,7 +116,9 @@ class AbstractGraphic:
 
     @abstractproperty
     def surface(self) -> pygame.Surface:
-        ...
+        raise NotImplementedError(
+            f"'surface' is not implemented for {type(self).__name__}"
+        )
 
 
 @dataclass
