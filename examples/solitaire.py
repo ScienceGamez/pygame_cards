@@ -128,13 +128,20 @@ class ClondikeDepotPileGaphics(Deck):
         last_card: NumberCard = self.cardset[-1]
         return last_card.is_one_level_less_than(card, as_equals_1=True)
 
+    def is_finished(self) -> bool:
+        """Check if the pile is finished."""
+        if len(self.cardset) == 0:
+            return False
+        last_card: NumberCard = self.cardset[-1]
+        return last_card.number == Level.KING
+
 
 card_set = CardSets.n52
 card_set.shuffle()
 
 N_PILES = 7
 
-pile_size = (width / (N_PILES + 2), height * 0.8)
+pile_size = (width / (N_PILES + 2), height * 0.7)
 card_size = (pile_size[0] * 0.8, pile_size[1] / 3)
 
 # Get the card set of each pile
@@ -218,6 +225,11 @@ pygame.display.flip()
 
 clock = pygame.time.Clock()
 
+
+def end_game():
+    manager.start_crazy(screen)
+
+
 tick = 0
 while 1:
     # pygame.image.save(screen, "solitaire.png")
@@ -244,6 +256,11 @@ while 1:
                 ):
                     # In case the 3 card storage is empty, take the old cards
                     temp_3_cards.extend_cards(temp_3_cards_storage.pop(-1))
+                if event.to_set in depots and all(
+                    [d.is_finished() for d in depots.values()]
+                ):
+                    # The last card was put on the thing
+                    end_game()
             case pygame_cards.events.CARDSSET_CLICKED:
                 card = event.card
                 set = event.set
@@ -255,6 +272,10 @@ while 1:
                     if depot.can_put(card):
                         depot.append_card(card)
                         set.remove_card(card)
+                        if all([d.is_finished() for d in depots.values()]):
+                            # The last card was put on the thing
+                            end_game()
+
                         if isinstance(set, ClondikePileGaphics):
                             set.turn_top_card()
 

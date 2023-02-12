@@ -155,6 +155,12 @@ class CardsetGraphic(AbstractGraphic):
             self._raised_with_hovered_warning = True
         return self.surface
 
+    def get_card_positions(self) -> dict[AbstractCard, tuple[int, int]]:
+        """Return the position of each card from the cardset."""
+        raise NotImplementedError(
+            f"'get_card_positions' in Class {type(self).__name__}"
+        )
+
 
 class CardsSet(list[AbstractCard]):
     """A list of cards.

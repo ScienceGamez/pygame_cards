@@ -190,6 +190,12 @@ class AlignedHand(BaseHand):
 
         return None
 
+    def get_card_positions(self) -> dict[AbstractCard, tuple[int, int]]:
+        y = self.calculate_y_position()
+        xs, _ = self.calculate_x_positions()
+
+        return {card: (x, y) for card, x in zip(self.cardset, xs)}
+
 
 class RoundedHand(BaseHand):
     """A hand of card with all the cards aligned on an arc of a circle.
@@ -349,6 +355,18 @@ class RoundedHand(BaseHand):
                 return card
         return None
 
+    def get_card_positions(self) -> dict[AbstractCard, tuple[int, int]]:
+        # use aligned hand as a proxy
+        self.card_spacing = constants.COLUMN_SPACING
+        y = AlignedHand.calculate_y_position(self)
+        xs, _ = AlignedHand.calculate_x_positions(self)
+
+        self.logger.warning(
+            f"'get_card_positions' is not perfectly correct implemented yet"
+        )
+
+        return {card: (x, y) for card, x in zip(self.cardset, xs)}
+
 
 class Pile(CardsetGraphic):
     """A pile has only its last/s card/s that can be selected.
@@ -476,6 +494,13 @@ class VerticalPileGraphic(Pile):
             return len(self.cardset) - 1
         return None
 
+    def get_card_positions(self) -> dict[AbstractCard, tuple[int, int]]:
+        x_position = (self.size[0] - self.card_size[0]) / 2
+
+        return {
+            card: (x_position, y) for card, y in zip(self.cardset, self.y_positions)
+        }
+
 
 class HorizontalPileGraphic(Pile):
     """Show a cards horizontally aligned.
@@ -550,6 +575,13 @@ class HorizontalPileGraphic(Pile):
             # Last card is on top
             return len(self.cardset) - 1
         return None
+
+    def get_card_positions(self) -> dict[AbstractCard, tuple[int, int]]:
+        y_position = (self.size[1] - self.card_size[1]) / 2
+
+        return {
+            card: (x, y_position) for card, x in zip(self.cardset, self.x_positions)
+        }
 
 
 if __name__ == "__main__":

@@ -149,6 +149,9 @@ class Deck(CardBackOwner):
         self.clear_cache()
         return cards
 
+    def get_card_positions(self) -> dict[AbstractCard, tuple[int, int]]:
+        return {card: (0, 0) for card in self.cardset}
+
 
 if __name__ == "__main__":
     # This will visualize the cards

@@ -1,6 +1,7 @@
 """Game Manager for cards in pygame."""
 from dataclasses import dataclass
 import logging
+import random
 from typing import Callable
 
 import pygame
@@ -425,6 +426,66 @@ class CardsManager(Manager):
                 ),
             )
 
+    def start_crazy(self, screen: pygame.Surface):
+        """Start the crazy mode.
+
+        Good way to end a game.
+        """
+        # Get all cards available in the cardsets
+        cards = []
+        x_positions = []
+        y_positions = []
+        for cardset, pos in zip(self.card_sets, self._card_sets_positions):
+            positions = cardset.get_card_positions()
+            set_x, set_y = pos
+            for card in cardset.cardset:
+                x, y = positions[card]
+                x_positions.append(x + set_x)
+                y_positions.append(y + set_y)
+                cards.append(card)
+
+        cards = sum([cardset.cardset], [])
+
+        x_velocities = [random.randint(-10, 10) for _ in range(len(cards))]
+        y_velocities = [random.randint(-10, 10) for _ in range(len(cards))]
+        y_acceleration = 1
+
+        fps = 30
+        clock = pygame.time.Clock()
+
+        while True:
+            # Update the position of all the cards based on the velocity and gravity
+            for i in range(len(cards)):
+                x, y = x_positions[i], y_positions[i]
+                x_positions[i] += x_velocities[i]
+                y_positions[i] += y_velocities[i]
+                y_velocities[i] += y_acceleration
+                if y_positions[i] > screen.get_height() - cards[i].graphics.size[1]:
+                    y_velocities[i] = -y_velocities[i]
+                if (
+                    x_positions[i] < 0
+                    or x_positions[i] > screen.get_width() - cards[i].graphics.size[0]
+                ):
+                    x_velocities[i] = -x_velocities[i]
+
+            screen.blits(
+                [
+                    (card.graphics.surface, (x, y))
+                    for card, x, y in zip(cards, x_positions, y_positions)
+                ]
+            )
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        sys.exit()
+
+            pygame.display.update()
+
+            clock.tick(fps)
+
 
 if __name__ == "__main__":
     # This will visualize the cards
@@ -441,6 +502,11 @@ if __name__ == "__main__":
     size = width, height = 1500, 700
 
     screen = pygame.display.set_mode(size)
+
+    # put a small button to start crazy stuff on the top right of the screen
+    font = pygame.font.Font(None, 20)
+    button = font.render("Start Crazy", True, (255, 255, 255))
+    start_crazy_button_pos = (size[0] - button.get_width() - 10, 10)
 
     card_set = CardsSet(ClassicCardSet.n52[:3])
     card_set2 = ClassicCardSet.n52[7:18]
@@ -464,10 +530,22 @@ if __name__ == "__main__":
 
     while 1:
         screen.fill("black")
+        screen.blit(button, start_crazy_button_pos)
         time_delta = clock.tick(60) / 1000.0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                # get the position of the mouse click
+                mouse_pos = pygame.mouse.get_pos()
+                # Check if touches the crazy stuff
+                if (
+                    start_crazy_button_pos[0]
+                    <= mouse_pos[0]
+                    <= start_crazy_button_pos[0] + button.get_width()
+                ):
+                    manager.start_crazy(screen)
+                    break
 
             manager.process_events(event)
 
