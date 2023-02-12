@@ -5,6 +5,7 @@ import logging
 import threading
 from typing import TYPE_CHECKING, Type
 import pygame
+from pygame_cards import constants
 
 
 if TYPE_CHECKING:
@@ -24,10 +25,13 @@ class AbstractCard:
     such that you can inherit from the hash method, which is safely
     handled by the u_id attribute.
 
-    :attr name: The name of the card
-    :attr u_id: A unique identifier for each card. Cards can be in
+    :param name: The name of the card
+    :param u_id: A unique identifier for each card. Cards can be in
         two similar exemplar, but will have different u_ids.
-    :attr graphics_type: The type of graphics we want to use.
+    :param graphics_type: The type of graphics we want to use.
+    :param logger: A :py:class:`logging.Logger` object.
+        Useful for debugging purposes.
+
     """
 
     name: str
@@ -86,17 +90,28 @@ class AbstractCard:
 class AbstractGraphic:
     """An abstract class for all the graphics used in the game.
 
+    It works using a cache system for the surface.
+    This means that if the graphic must be recreated, one can simply
+    clear the cache of the object.
+
+    In case one need graphics of different sizes for the same object the best is to create
+    two instances of graphics for the same object.
+
     :attr surface: The :py:class:`pygame.Surface`
         corresponding to the current graphic.
+    :attr size: The size of the graphic.
+        If you change that attribute, the surface will be recreated.
+    :attr logger: The logger for this class. Useful for debugging.
 
     """
 
     surface: pygame.Surface
     logger: logging.Logger
+    size: tuple[int, int]
 
     def __init_subclass__(cls) -> None:
         # Assing a logger
-        cls.logger = logging.getLogger(f"pywonders.graphics.{cls.__name__}")
+        cls.logger = logging.getLogger(f"pygame_cards.graphics.{cls.__name__}")
 
     def clear_cache(self) -> None:
         """Clear the cache of this graphics.
@@ -113,8 +128,24 @@ class AbstractGraphic:
     @abstractproperty
     def surface(self) -> pygame.Surface:
         raise NotImplementedError(
-            f"'surface' is not implemented for {type(self).__name__}"
+            f"'surface' is not implemented for {type(self).__name__}. Please use"
+            " the @cached_property decorator."
         )
+
+    @property
+    def size(self) -> tuple[int, int]:
+        return self._size
+
+    @size.setter
+    def size(self, size: tuple[int, int]) -> None:
+        """Set the size of the graphic.
+
+        :param size: The size of the graphic.
+        """
+        if size == self._size:
+            return
+        self._size = size
+        self.clear_cache()
 
 
 @dataclass
@@ -122,7 +153,7 @@ class AbstractCardGraphics(AbstractGraphic):
     """A base representation for what the card should look like."""
 
     card: AbstractCard
-    size: tuple[int, int] = 230, 350
+    size: tuple[int, int] = constants.CARD_SIZE
 
     @property
     def surface(self) -> pygame.Surface:

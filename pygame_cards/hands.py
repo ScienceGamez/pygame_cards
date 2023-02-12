@@ -12,6 +12,7 @@ from pygame_cards.utils import AutoName
 from pygame_cards.abstract import AbstractGraphic
 from pygame_cards.effects import outer_halo
 from pygame_cards.set import CardsSet
+from pygame_cards import constants
 
 
 class CardOverlap(AutoName):
@@ -19,9 +20,8 @@ class CardOverlap(AutoName):
     right = auto()
 
 
-@dataclass
 class CardsetGraphic(AbstractGraphic):
-    """A base graphic fro any card holder.
+    """A base graphic for any card holder.
 
     This will show a card set on the screen.
     You should implement the :meth:`surface`.
@@ -34,25 +34,49 @@ class CardsetGraphic(AbstractGraphic):
         graphic. If 0, this is unlimited.
     """
 
-    cardset: CardsSet
+    def __init__(
+        self,
+        cardset: CardsSet,
+        size: tuple[int, int] = constants.CARDSET_SIZE,
+        card_size: tuple[int, int] = constants.CARD_SIZE,
+        card_border_radius_ratio: float = constants.CARD_BORDER_RADIUS_RATIO,
+        graphics_type: type | None = None,
+        max_cards: int = 0,
+    ):
+        self.cardset = cardset
+        self._size = size
+        self.card_size = card_size
+        self.card_border_radius_ratio = card_border_radius_ratio
+        self.max_cards = max_cards
+        self.graphics_type = graphics_type
 
-    # Defualt hand size
-    size: tuple[int, int] = (900, 240)
-    card_size: tuple[int, int] = (135, 200)
-    card_border_radius: int = 20
-
-    max_cards: int = 0
-
-    graphics_type: type | None = None
-
-    def __post_init__(self):
         for card in self.cardset:
             # Enforce the type
-            if self.graphics_type:
-                card.graphics_type = self.graphics_type
+            if graphics_type:
+                card.graphics_type = graphics_type
             # Enforce the card size
             card.graphics.size = self.card_size
         self._raised_with_hovered_warning = False
+
+    def clear_cache(self) -> None:
+        super().clear_cache()
+        for prop in ["card_border_radius"]:
+            self.__dict__.pop(prop, None)
+
+    @property
+    def card_size(self) -> tuple[int, int]:
+        return self._card_size
+
+    @card_size.setter
+    def card_size(self, size: tuple[int, int]) -> None:
+        self._card_size = size
+        # apply the change to all the cards
+        for card in self.cardset:
+            card.graphics.size = self.card_size
+
+    @cached_property
+    def card_border_radius(self) -> int:
+        return int(self.card_size[0] * self.card_border_radius_ratio)
 
     @abstractproperty
     def surface(self) -> pygame.Surface:
@@ -136,7 +160,6 @@ class CardsetGraphic(AbstractGraphic):
         return self.surface
 
 
-@dataclass
 class BaseHand(CardsetGraphic):
     """A base class for a hand.
 
@@ -151,14 +174,20 @@ class BaseHand(CardsetGraphic):
 
     """
 
-    overlap_hide: CardOverlap = CardOverlap.right
+    def __init__(
+        self,
+        *args,
+        overlap_hide: CardOverlap = CardOverlap.right,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.overlap_hide = overlap_hide
 
 
-@dataclass
 class AlignedHand(BaseHand):
     """A hand of card with all the cards aligned.
 
-    :attr offset_position: The offset of the position between the cards.
+    :attr card_spacing: The offset proportion of the position between the cards.
 
         * 0, means the cards are directly next to each other.
         * Positive offset, means the card will be further
@@ -168,7 +197,14 @@ class AlignedHand(BaseHand):
 
     """
 
-    offset_position: float = 20
+    def __init__(
+        self,
+        *args,
+        card_spacing: float = constants.COLUMN_SPACING,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.card_spacing = card_spacing
 
     @cached_property
     def surface(self) -> pygame.Surface:
@@ -202,7 +238,7 @@ class AlignedHand(BaseHand):
             spacing between the cards.
         """
         # calculate dimenstions required for the displayed surf
-        offset = self.offset_position
+        offset = self.card_spacing * self.card_size[0]
         total_x = (
             len(self.cardset) * self.card_size[0] + (len(self.cardset) - 1) * offset
         )
@@ -213,7 +249,7 @@ class AlignedHand(BaseHand):
                 len(self.cardset) - 1
             )
         x_positions = [
-            i * self.card_size[0] + (i + 1) * offset for i in range(len(self.cardset))
+            i * self.card_size[0] + i * offset for i in range(len(self.cardset))
         ]
         # Revert the position in case of another overlap
         x_positions = [
@@ -222,6 +258,8 @@ class AlignedHand(BaseHand):
             else self.size[0] - self.card_size[0] - x_pos
             for x_pos in x_positions
         ]
+        self.logger.debug(f"{x_positions=}")
+
         return x_positions, offset
 
     def with_hovered(
@@ -276,10 +314,11 @@ class AlignedHand(BaseHand):
             if (
                 self.overlap_hide == CardOverlap.right
                 # Check that is not under the next card
-                and pos[0] - x_pos > self.card_size[0] + self.offset_position
+                and pos[0] - x_pos
+                > self.card_size[0] + self.card_spacing * self.card_size[0]
             ) or (
                 self.overlap_hide == CardOverlap.left
-                and pos[0] - x_pos < self.offset_position
+                and pos[0] - x_pos < self.card_spacing * self.card_size[0]
             ):
                 self.logger.debug(
                     f"get_card_at({pos=}):: {card_index=} is  going to be under the"
@@ -296,7 +335,6 @@ class AlignedHand(BaseHand):
         return None
 
 
-@dataclass
 class RoundedHand(BaseHand):
     """A hand of card with all the cards aligned on an arc of a circle.
 
@@ -312,9 +350,18 @@ class RoundedHand(BaseHand):
 
     """
 
-    angle: float = 90
-    # Change the defualt size
-    size: tuple[float, float] = (700, 400)
+    def __init__(
+        self,
+        *args,
+        angle: float = 90,
+        **kwargs,
+    ):
+        if not "size" in kwargs:
+            # Change the defualt size
+            kwargs["size"] = (700, 400)
+
+        super().__init__(*args, **kwargs)
+        self.angle = angle
 
     def _max_card_h(self) -> float:
         """Return the maximum height that a card can do in surface."""
@@ -447,13 +494,19 @@ class RoundedHand(BaseHand):
         return None
 
 
-@dataclass
 class Pile(CardsetGraphic):
     """A pile has only its last/s card/s that can be selected.
 
     :attr offset: The offset between cards."""
 
-    offset: int = 30
+    def __init__(
+        self,
+        *args,
+        offset: int = 30,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.offset = offset
 
     def _get_card_index_at(self, pos: tuple[int, int]) -> int | None:
         """Return the index of the card located at the current position."""
@@ -478,7 +531,6 @@ class Pile(CardsetGraphic):
         return None if idx is None else self.cardset[idx:]
 
 
-@dataclass
 class VerticalPileGraphic(Pile):
     """Show a column in cards aligned.
 
@@ -486,12 +538,37 @@ class VerticalPileGraphic(Pile):
 
     """
 
-    size: tuple[int, int] = (175, 400)
+    def __init__(
+        self,
+        *args,
+        **kwargs,
+    ):
+        if not "size" in kwargs:
+            # Change the defualt size
+            kwargs["size"] = (175, 400)
+
+        super().__init__(*args, **kwargs)
 
     def clear_cache(self) -> None:
         # Remove the surface cache_property if exists
         self.__dict__.pop("y_positions", None)
         super().clear_cache()
+
+    @property
+    def size(self) -> tuple[int, int]:
+        return super().size
+
+    @size.setter
+    def size(self, size: tuple[int, int]) -> None:
+        super(VerticalPileGraphic, VerticalPileGraphic).size.__set__(self, size)
+        # Cards are too large for the new pile size
+        if self.card_size[0] > self.size[0]:
+            width = self.size[0]
+            # Keep the same ratio
+            height = width / self.card_size[0] * self.card_size[1]
+
+            self.card_size = (width, height)
+            self.logger.debug(f"setting card size to {self.card_size=}")
 
     @cached_property
     def surface(self) -> pygame.Surface:
@@ -502,6 +579,8 @@ class VerticalPileGraphic(Pile):
         n_cards = len(self.cardset)
         if n_cards == 0:
             return surf
+
+        self.logger.debug(f"{self.size=}, {self.card_size=}")
 
         x_position = (self.size[0] - self.card_size[0]) / 2
 
@@ -542,7 +621,6 @@ class VerticalPileGraphic(Pile):
         return None
 
 
-@dataclass
 class HorizontalPileGraphic(Pile):
     """Show a cards horizontally aligned.
 
@@ -550,7 +628,16 @@ class HorizontalPileGraphic(Pile):
 
     """
 
-    size: tuple[int, int] = (350, 240)
+    def __init__(
+        self,
+        *args,
+        **kwargs,
+    ):
+        if not "size" in kwargs:
+            # Change the defualt size
+            kwargs["size"] = (350, 240)
+
+        super().__init__(*args, **kwargs)
 
     def clear_cache(self) -> None:
         # Remove the surface cache_property if exists
@@ -617,21 +704,21 @@ if __name__ == "__main__":
 
     pygame.init()
 
-    size = width, height = 1500, 700
+    size = width, height = 1500, 1200
 
     screen = pygame.display.set_mode(size)
 
     card_set = CardsSet(ClassicCardSet.n52[:4])
 
     graphics_aligned = AlignedHand(card_set)
-    graphics_aligned_overlap = AlignedHand(card_set, offset_position=-29)
+    graphics_aligned_overlap = AlignedHand(card_set, card_spacing=-0.15)
     graphics_rounded = RoundedHand(card_set + card_set + card_set)
     graphics_rounded2 = RoundedHand(card_set + card_set)
 
-    graphics_aligned.logger.setLevel(logging.DEBUG)
+    # graphics_aligned.logger.setLevel(logging.DEBUG)
     graphics_aligned_overlap.logger.setLevel(logging.DEBUG)
-    graphics_rounded.logger.setLevel(logging.DEBUG)
-    graphics_rounded2.logger.setLevel(logging.DEBUG)
+    # graphics_rounded.logger.setLevel(logging.DEBUG)
+    # graphics_rounded2.logger.setLevel(logging.DEBUG)
 
     screen.blit(graphics_aligned.surface, (200, 0))
     screen.blit(graphics_aligned_overlap.surface, (200, 200))
@@ -639,6 +726,9 @@ if __name__ == "__main__":
     screen.blit(graphics_rounded2.surface, (200, 750))
 
     pygame.display.flip()
+
+    clock = pygame.time.Clock()
+    fps = 4
 
     while 1:
         pos = pygame.mouse.get_pos()
@@ -648,7 +738,7 @@ if __name__ == "__main__":
             (200, 0),
         )
         pygame.display.update()
-        sleep(1)
+        clock.tick(fps)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()

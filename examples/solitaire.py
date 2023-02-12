@@ -27,17 +27,16 @@ size = width, height = screen.get_size()
 manager = CardsManager()
 
 
-@dataclass
 class ClondikePileGaphics(VerticalPileGraphic, CardBackOwner):
     """Show a column in clondike.
 
     All cards are hidden but the last one is shown.
     """
 
-    _n_cards_hidden: pygame.Surface = field(init=False)
+    _n_cards_hidden: pygame.Surface
 
-    def __post_init__(self):
-        super().__post_init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self._n_cards_hidden = len(self.cardset) - 1
 
@@ -102,7 +101,6 @@ class ClondikePileGaphics(VerticalPileGraphic, CardBackOwner):
         self.clear_cache()
 
 
-@dataclass
 class ClondikeDepotPileGaphics(Deck):
     """Show a pile where you put the cards.
 
@@ -111,7 +109,9 @@ class ClondikeDepotPileGaphics(Deck):
     :attr color: The Color of this pile.
     """
 
-    color: Colors = None
+    def __init__(self, *args, color: Colors = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.color = color
 
     @cached_property
     def surface(self):
@@ -146,7 +146,9 @@ for pile in range(N_PILES):
     next_card_idx = card_idx + pile + 1
     piles_card_sets.append(card_set[card_idx:next_card_idx])
     card_idx = next_card_idx
-    this_pile_graphics = ClondikePileGaphics(piles_card_sets[-1], pile_size, card_size)
+    this_pile_graphics = ClondikePileGaphics(
+        cardset=piles_card_sets[-1], size=pile_size, card_size=card_size
+    )
     piles_graphics.append(this_pile_graphics)
 
     # Finally add the set to the manager

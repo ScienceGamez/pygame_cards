@@ -15,19 +15,18 @@ from pygame_cards.set import CardsSet
 from pygame_cards.utils import DEFAULT_CARDBACK
 
 
-@dataclass
 class CardBackOwner(CardsetGraphic):
     """Cardset Grapics that will show card back.
 
     Support setting card backs.
     """
 
-    _card_back: pygame.Surface = field(init=False)
+    def __init__(
+        self, *args, card_back: Path | str | pygame.Surface = DEFAULT_CARDBACK, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
 
-    def __post_init__(self):
-        super().__post_init__()
-
-        self.card_back = DEFAULT_CARDBACK
+        self.card_back = card_back
 
     @property
     def card_back(self) -> pygame.Surface:
@@ -74,17 +73,24 @@ class CardBackOwner(CardsetGraphic):
         self._card_back = _card_back
 
 
-@dataclass
 class Deck(CardBackOwner):
     """Graphics for a deck."""
 
-    size: tuple[int, int] = (160, 230)
-    visible: bool = False
+    def __init__(
+        self,
+        *args,
+        visible: bool = False,
+        **kwargs,
+    ):
+        if not "size" in kwargs:
+            # Change the defualt size
+            kwargs["size"] = (160, 230)
 
-    def __post_init__(self):
-        super().__post_init__()
+        super().__init__(*args, **kwargs)
+        self.visible = visible
 
         # Assign a default max size assuming the deck is full
+        # This is needed to show how big the pile is
         if self.max_cards == 0:
             self.max_cards = len(self.cardset)
 
