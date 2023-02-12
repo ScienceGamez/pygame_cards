@@ -90,18 +90,24 @@ class AbstractCard:
 class AbstractGraphic:
     """An abstract class for all the graphics used in the game.
 
-    It works using a cache system for the surface.
-    This means that if the graphic must be recreated, one can simply
-    clear the cache of the object.
+    The graphic is showed using the surface property, which is a pygame.Surface
+    object.
+    The size of the suface is also determined by the size property.
+    The suface should always be rendered for the desired size.
+    This helps showing cards well on screen with different sizes.
 
-    In case one need graphics of different sizes for the same object the best is to create
-    two instances of graphics for the same object.
+    In case one need graphics of different sizes for the same object the best
+    is to create
+    two instances of graphics for the same object for performance reasons
+    (not having to recreate the surface every time).
 
-    :attr surface: The :py:class:`pygame.Surface`
-        corresponding to the current graphic.
-    :attr size: The size of the graphic.
+    :param surface: The :py:class:`pygame.Surface` corresponding to the current graphic.
+        This attribute must be implemented as a `cached property`.
+        Whe the size of the graphic is changed, the cached surface is
+        deleted and a new one is created.
+    :param size: The size of the graphic.
         If you change that attribute, the surface will be recreated.
-    :attr logger: The logger for this class. Useful for debugging.
+    :param logger: The logger for this class. Useful for debugging.
 
     """
 
@@ -150,7 +156,7 @@ class AbstractGraphic:
 
 @dataclass
 class AbstractCardGraphics(AbstractGraphic):
-    """A base representation for what the card should look like."""
+    """A base representation for what a card should look like."""
 
     card: AbstractCard
     size: tuple[int, int] = constants.CARD_SIZE
@@ -168,6 +174,8 @@ class AbstractCardGraphics(AbstractGraphic):
 
 
 class Manager:
+    """Abstract class for cards manager."""
+
     logger: logging.Logger
 
     def __init__(self) -> None:

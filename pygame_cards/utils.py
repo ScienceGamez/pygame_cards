@@ -15,7 +15,7 @@ if not DEFAULT_CARDBACK.is_file():
     DEFAULT_CARDBACK.parent.mkdir(parents=True, exist_ok=True)
 
     urlretrieve(
-        "https://github.com/ScienceGamez/pygame_cards/raw/master/"
+        "https://github.com/ScienceGamez/pygame_cards/raw/main/"
         "pygame_cards/images/DEFAULT_CARDBACK.png",
         DEFAULT_CARDBACK,
     )

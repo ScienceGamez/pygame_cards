@@ -1,6 +1,10 @@
-"""Classic games cards based on emojis.
+"""Classic playing cards module.
 
-This is based on emojis and cards are created at runtime.
+Many games use classic game cards.
+For that reason pygame_cards implements them using a simple api.
+
+
+The current implementation is based on emojis and graphics are created at runtime.
 """
 from __future__ import annotations
 from dataclasses import dataclass
@@ -20,6 +24,8 @@ from pygame_cards.defaults import DefaultCardsSet
 
 
 class Colors(Enum):
+    """Colors of the cards."""
+
     SPADE = "♠"
     HEART = "♥"
     DIAMOND = "♦"
@@ -27,26 +33,29 @@ class Colors(Enum):
 
 
 class Level(Enum):
+    """Levels of special cards."""
+
     JACK = "J"
     QUEEN = "Q"
     KING = "K"
     AS = "A"
 
 
+# Matching color strings
 RGBColor: dict[Colors, str] = {
     Colors.SPADE: "black",
     Colors.HEART: "red",
     Colors.DIAMOND: "red",
     Colors.CLUB: "black",
 }
-# Colors to specify an emoji version
+# Emoji color codes to specify an emoji version
 HEXEmojiColor: dict[Colors, str] = {
     Colors.SPADE: "1F3FB",
     Colors.HEART: "1F3FC",
     Colors.DIAMOND: "1F3FD",
     Colors.CLUB: "1F3FF",
 }
-
+# Emoji matching the levers
 LevelEmojis: dict[Level, str] = {
     Level.KING: "🤴",
     Level.QUEEN: "👸",
@@ -260,8 +269,8 @@ class NumberCard(AbstractCard):
 class CardSets:
     """Default card sets that can be used.
 
-    :attr n52: A 52 game cards.
-    :attr n36: A 36 game cards.
+    :param n52: A 52 game cards.
+    :param n36: A 36 game cards.
     """
 
     @classmethod

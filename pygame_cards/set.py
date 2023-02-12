@@ -1,20 +1,159 @@
 from __future__ import annotations
+from functools import cached_property
 import itertools
 import json
 import logging
 from pathlib import Path
 import random
 from typing import Type
+from abc import abstractmethod, abstractproperty
+
+import pygame
 from pygame_cards.abstract import AbstractCard, AbstractGraphic
 from pygame_cards.io.utils import to_json
+from pygame_cards import constants
 
 _CARDSET_ID_GENERATOR = itertools.count()
 
 
-class CardsSetGraphic(AbstractGraphic):
-    """Graphic representation of a set of cards."""
+class CardsetGraphic(AbstractGraphic):
+    """A base graphic for any card holder.
 
-    ...
+    This will show a card set on the screen.
+    You should implement the :meth:`surface`.
+
+    :param cardset: The set of card that is shown.
+    :param size: A tuple with the size of the requested card in this graphic.
+    :param card_size: A tuple with the size of the cards in this graphic.
+    :param card_border_radius: The radius of the cards in this card set.
+    :param max_cards: The max number of card that can be contained in this
+        graphic. If 0, this is unlimited.
+    """
+
+    def __init__(
+        self,
+        cardset: CardsSet,
+        size: tuple[int, int] = constants.CARDSET_SIZE,
+        card_size: tuple[int, int] = constants.CARD_SIZE,
+        card_border_radius_ratio: float = constants.CARD_BORDER_RADIUS_RATIO,
+        graphics_type: type | None = None,
+        max_cards: int = 0,
+    ):
+        self.cardset = cardset
+        self._size = size
+        self.card_size = card_size
+        self.card_border_radius_ratio = card_border_radius_ratio
+        self.max_cards = max_cards
+        self.graphics_type = graphics_type
+
+        for card in self.cardset:
+            # Enforce the type
+            if graphics_type:
+                card.graphics_type = graphics_type
+            # Enforce the card size
+            card.graphics.size = self.card_size
+        self._raised_with_hovered_warning = False
+
+    def clear_cache(self) -> None:
+        super().clear_cache()
+        for prop in ["card_border_radius"]:
+            self.__dict__.pop(prop, None)
+
+    @property
+    def card_size(self) -> tuple[int, int]:
+        return self._card_size
+
+    @card_size.setter
+    def card_size(self, size: tuple[int, int]) -> None:
+        self._card_size = size
+        # apply the change to all the cards
+        for card in self.cardset:
+            card.graphics.size = self.card_size
+
+    @cached_property
+    def card_border_radius(self) -> int:
+        return int(self.card_size[0] * self.card_border_radius_ratio)
+
+    @abstractproperty
+    def surface(self) -> pygame.Surface:
+        raise NotImplementedError(f"property 'surface' in {type(self).__name__}")
+
+    @abstractmethod
+    def get_card_at(self, pos: tuple[int, int]) -> AbstractCard | None:
+        """Return the card at the given pixel position
+
+        :arg pos: The position inside the CardsetGraphic surface.
+        """
+        raise NotImplementedError(f"'get_card_at' in Class {type(self).__name__}")
+
+    @abstractmethod
+    def get_cards_at(self, pos: tuple[int, int]) -> CardsSet | None:
+        """Return a cardset at the given pixel position.
+
+        This can be implemented for allowing moving multiple cards.
+        You will still have to implement :py:meth:`get_card_at`.
+        You will also need to set :py:attr:`drag_multiple_cards`
+        to True.
+        in :py:class:`CarsetRights`. The :py:class:`CardsManager`
+        will then use this method for selection.
+
+        :arg pos: The position inside the CardsetGraphic surface.
+        """
+        raise NotImplementedError(f"'get_cards_at' in Class {type(self).__name__}")
+
+    def remove_card(self, card: AbstractCard) -> None:
+        """Remove a card from the cardset."""
+
+        self.cardset.remove(card)
+        self.clear_cache()
+
+    def pop_card(self, card_index: int) -> AbstractCard:
+        """Remove a card from the cardset.
+
+        :arg card_index: The index at which the card we want to
+            pop is.
+        :return card_at_index: The card at the desired index.
+        """
+
+        card = self.cardset.pop(card_index)
+        self.clear_cache()
+        return card
+
+    def remove_all_cards(self) -> CardsSet:
+        """Remove all cards from the cardset.
+
+        :return cards: A cardset with all the cards remaining.
+        """
+        cardset = CardsSet()
+        while self.cardset:
+            card = self.cardset.pop(0)
+            cardset.append(card)
+        self.clear_cache()
+        return cardset
+
+    def append_card(self, card: AbstractCard) -> None:
+        """Append a card to the cardset."""
+
+        self.cardset.append(card)
+        card.graphics.size = self.card_size
+        card.graphics.clear_cache()
+        self.clear_cache()
+
+    def extend_cards(self, card_set: CardsSet) -> None:
+        self.cardset.extend(card_set)
+        for card in card_set:
+            card.graphics.size = self.card_size
+            card.graphics.clear_cache()
+        self.clear_cache()
+
+    def with_hovered(self, card: AbstractCard | None) -> pygame.Surface:
+        """Show the hand with the card hovered."""
+        if not self._raised_with_hovered_warning:
+            logging.warning(
+                f"Not implemented `with_hovered()` in {type(self).__name__}",
+            )
+            self._raised_with_hovered_warning = True
+        return self.surface
 
 
 class CardsSet(list[AbstractCard]):
@@ -28,7 +167,7 @@ class CardsSet(list[AbstractCard]):
     for the graphics.
     """
 
-    _graphics: CardsSetGraphic | None = None
+    _graphics: CardsetGraphic | None = None
 
     def __init__(self, *args: AbstractCard) -> None:
         super().__init__(*args)
@@ -245,12 +384,12 @@ class CardsSet(list[AbstractCard]):
 
     # Graphic methods
     @property
-    def graphics(self) -> CardsSetGraphic:
+    def graphics(self) -> CardsetGraphic:
         if self._graphics is None:
             raise NotImplementedError(f"No graphics set for {self}")
 
         return self._graphics
 
     @graphics.setter
-    def graphics(self, value: CardsSetGraphic) -> None:
+    def graphics(self, value: CardsetGraphic) -> None:
         self._graphics = value

@@ -32,11 +32,24 @@ class GameBoardGraphic(AbstractGraphic):
         | tuple[int, int] = (0.2, 0.8),
         size: tuple[int, int] = constants.BOARD_SIZE,
     ) -> None:
+        """Initialize a game board.
+
+        Different cardsets are places at different places on the board.
+
+        :arg cardsets_rel_pos: Relative positions of the cardsets.
+        :arg cardsets_rel_size: Relative size of the cardsets on the
+            board.
+        :arg size: The size of the boad in pixels.
+        """
         self._size = size
         self.cardsets_rel_pos = cardsets_rel_pos
         self.cardsets_rel_size = cardsets_rel_size
 
-    @property
+    def clear_cache(self) -> None:
+        super().clear_cache()
+        self.__dict__.pop("background", None)
+
+    @cached_property
     def background(self) -> pygame.Surface:
         # Transparent surface as default
         return pygame.Surface(self.size, pygame.SRCALPHA)
@@ -153,17 +166,19 @@ if __name__ == "__main__":
     board = GameBoard([set_1, set_2])
     board_graphics = GameBoardGraphic(
         cardsets_rel_pos={set_1: (0, 0.1), set_2: (0.5, 0.1)},
-        cardsets_rel_size={set_1: (0.2, 0.8), set_2: (0.1, 0.8)},
+        cardsets_rel_size={set_1: (0.2, 0.5), set_2: (0.1, 0.8)},
     )
 
     # Show the graphics surface in teh main pygame loop
     pygame.init()
-    screen = pygame.display.set_mode((1000, 1000))
+    screen = pygame.display.set_mode((1000, 800))
 
     pygame.display.set_caption("Game Board")
     board.graphics = board_graphics
     board.graphics.logger.setLevel(logging.DEBUG)
     board_graphics.game_board = board
+    board_graphics.size = screen.get_size()
+
     surf = board.graphics.surface
     fps = 10
     clock = pygame.time.Clock()

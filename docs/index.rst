@@ -15,7 +15,7 @@ You can have a look to the tutorial or to examples.
 pygame_cards includes standard playing cards,
 but also let you design your own cards.
 
-It also has support for things like dices or poker chips.
+It also has support for things like game boards, dices or poker chips.
 
 
 To install you can simply do
@@ -36,8 +36,8 @@ The code is available on
    tutorial
    examples
    existing_sets
-   tokens
    api
+   developping
 
 
 

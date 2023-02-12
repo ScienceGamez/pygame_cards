@@ -25,13 +25,13 @@ class CardSetRights:
     """Rigths for what the manager can do with a card set.
 
 
-    :attr clickable: Whether clicking on the set will
+    :param clickable: Whether clicking on the set will
         generate CARDSSET_CLICKED events.
-    :attr draggable_out: Whether we can drag the card out
+    :param draggable_out: Whether we can drag the card out
         of the card set to another one.
-    :attr draggable_in: Whether we can drag a card from
+    :param draggable_in: Whether we can drag a card from
         another card set into this one.
-    :attr highlight_hovered_card: Whether to highlight the
+    :param highlight_hovered_card: Whether to highlight the
         hoverd_card from the cardset when the card set is hovered
     """
 
@@ -52,17 +52,20 @@ class CardSetRights:
 
 
 class CardsManager(Manager):
-    """A card manager class.
+    """A card manager handling cardset graphics.
 
     This is meant to be used similarily as the ui_manager from
-    :py:module:`pygame_gui`.
+    :py:mod:`pygame_gui` .
 
 
-    Capabilities:
+    Capabilities :
 
     * Tracking which cardset and card are under the player mouse.
     * Moving cards from on cardset to another
     * Add related events in the game loop
+
+    The cards manager can be inherited from if you need to add special
+    graphic mechanics.
 
     """
 
@@ -70,7 +73,7 @@ class CardsManager(Manager):
     _card_sets_positions: list[tuple[int, int]]
     _card_sets_rigths: list[CardSetRights]
 
-    # Attribues for recoreding past moves
+    # Attributes for recoreding past moves
     last_mouse_pos: tuple[int, int] = (0, 0)
     mouse_speed: tuple[int, int] = (0, 0)
     last_card_under_mouse: Card | None = None
@@ -94,6 +97,7 @@ class CardsManager(Manager):
 
         :arg click_time: The time you need from the mousebutton down
             to the mouse button up [ms]
+
         """
         super().__init__()
         self.card_sets = []
@@ -144,7 +148,7 @@ class CardsManager(Manager):
 
         :arg time: The time since the last update.
             in ms.
-        :return whether the surface was updated.
+        :return: whether the surface was updated or not.
         """
 
         if self.mouse_pos is None:

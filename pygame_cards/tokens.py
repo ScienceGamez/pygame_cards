@@ -7,12 +7,13 @@ pygame_cards also include suport for tokens.
 * Token container which display piles of tokens
 """
 from __future__ import annotations
+import math
 from dataclasses import dataclass
 from functools import cached_property
-import math
-from time import sleep
 from typing import TYPE_CHECKING
+
 import pygame
+
 from pygame_cards.abstract import AbstractGraphic
 
 if TYPE_CHECKING:
@@ -29,7 +30,7 @@ class RoundTokenGraphics(AbstractGraphic):
     radius: int = 200
 
     def __post_init__(self):
-        self.size = (self.radius * 2, self.radius * 2)
+        self._size = (self.radius * 2, self.radius * 2)
 
 
 @dataclass
@@ -43,6 +44,9 @@ class SquaredTokenGraphics(AbstractGraphic):
 
     edge: int = 100
     radius: int = 20
+
+    def __post_init__(self):
+        self._size = (self.edge, self.edge)
 
 
 @dataclass

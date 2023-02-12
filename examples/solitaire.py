@@ -106,7 +106,7 @@ class ClondikeDepotPileGaphics(Deck):
 
     All cards are hidden but the last one is shown.
 
-    :attr color: The Color of this pile.
+    :param color: The Color of this pile.
     """
 
     def __init__(self, *args, color: Colors = None, **kwargs):

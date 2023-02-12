@@ -1,26 +1,29 @@
-from functools import cached_property
 import sys
-from time import sleep
+from functools import cached_property
+
 import pygame
+
 from pygame_cards.abstract import AbstractCard, AbstractCardGraphics
-from pygame_emojis import load_svg
-
 from pygame_cards.utils import DEFAULT_CARDBACK
-
-CARD_BACK = AbstractCard("")
 
 
 class CardBackGraphics(AbstractCardGraphics):
-    """A simple graphics for a card back."""
+    """A simple graphics for a card back.
+
+    You can assign that graphics to any card you want.
+    """
 
     @cached_property
     def surface(self) -> pygame.Surface:
         return pygame.transform.scale(pygame.image.load(DEFAULT_CARDBACK), self.size)
 
 
-CARD_BACK.graphics_type = CardBackGraphics
-
 if __name__ == "__main__":
+    from time import sleep
+
+    card_back = AbstractCard("")
+    card_back.graphics_type = CardBackGraphics
+    card_back.graphics.size = (300, 500)
     pygame.init()
 
     size = width, height = 1500, 700
@@ -28,10 +31,10 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode(size)
     screen.fill("black")
 
-    position = (100 + CARD_BACK.graphics.size[0], 100)
+    position = (100 + card_back.graphics.size[0], 100)
 
     # Simply blit the card on the main surface
-    screen.blit(CARD_BACK.graphics.surface, position)
+    screen.blit(card_back.graphics.surface, position)
 
     while 1:
         for event in pygame.event.get():

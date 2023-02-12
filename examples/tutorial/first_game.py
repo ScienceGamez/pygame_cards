@@ -2,7 +2,8 @@
 import sys
 import pygame
 from examples.tutorial.minion_card_graphics import MinionCardGraphics
-from pygame_cards.back import CARD_BACK
+from pygame_cards.abstract import AbstractCard
+from pygame_cards.back import CardBackGraphics
 from pygame_cards.hands import AlignedHand
 from pygame_cards.manager import CardSetRights, CardsManager
 
@@ -40,7 +41,9 @@ manager.add_set(
     (width / 4, height - my_cards_graphics.size[1]),
 )
 
-ennemy_cards = CardsSet([CARD_BACK, CARD_BACK, CARD_BACK])
+card_back = AbstractCard("")
+card_back.graphics_type = CardBackGraphics
+ennemy_cards = CardsSet([card_back, card_back, card_back])
 ennemy_cards_graphics = AlignedHand(ennemy_cards, card_set_size, card_size=card_size)
 manager.add_set(
     ennemy_cards_graphics,

@@ -1,163 +1,23 @@
-from abc import abstractmethod, abstractproperty
-from dataclasses import dataclass
 from enum import auto
 from functools import cached_property
 import logging
 from math import cos, sin, sqrt
 import math
-from time import sleep
+
 import pygame
+
 from pygame_cards.abstract import AbstractCard
 from pygame_cards.utils import AutoName
-from pygame_cards.abstract import AbstractGraphic
 from pygame_cards.effects import outer_halo
-from pygame_cards.set import CardsSet
+from pygame_cards.set import CardsSet, CardsetGraphic
 from pygame_cards import constants
 
 
 class CardOverlap(AutoName):
+    """How card overlap in the hand."""
+
     left = auto()
     right = auto()
-
-
-class CardsetGraphic(AbstractGraphic):
-    """A base graphic for any card holder.
-
-    This will show a card set on the screen.
-    You should implement the :meth:`surface`.
-
-    :attr cardset: The set of card that is shown.
-    :attr size: A tuple with the size of the requested card in this graphic.
-    :attr card_size: A tuple with the size of the cards in this graphic.
-    :attr card_border_radius: The radius of the cards in this card set.
-    :attr max_cards: The max number of card that can be contained in this
-        graphic. If 0, this is unlimited.
-    """
-
-    def __init__(
-        self,
-        cardset: CardsSet,
-        size: tuple[int, int] = constants.CARDSET_SIZE,
-        card_size: tuple[int, int] = constants.CARD_SIZE,
-        card_border_radius_ratio: float = constants.CARD_BORDER_RADIUS_RATIO,
-        graphics_type: type | None = None,
-        max_cards: int = 0,
-    ):
-        self.cardset = cardset
-        self._size = size
-        self.card_size = card_size
-        self.card_border_radius_ratio = card_border_radius_ratio
-        self.max_cards = max_cards
-        self.graphics_type = graphics_type
-
-        for card in self.cardset:
-            # Enforce the type
-            if graphics_type:
-                card.graphics_type = graphics_type
-            # Enforce the card size
-            card.graphics.size = self.card_size
-        self._raised_with_hovered_warning = False
-
-    def clear_cache(self) -> None:
-        super().clear_cache()
-        for prop in ["card_border_radius"]:
-            self.__dict__.pop(prop, None)
-
-    @property
-    def card_size(self) -> tuple[int, int]:
-        return self._card_size
-
-    @card_size.setter
-    def card_size(self, size: tuple[int, int]) -> None:
-        self._card_size = size
-        # apply the change to all the cards
-        for card in self.cardset:
-            card.graphics.size = self.card_size
-
-    @cached_property
-    def card_border_radius(self) -> int:
-        return int(self.card_size[0] * self.card_border_radius_ratio)
-
-    @abstractproperty
-    def surface(self) -> pygame.Surface:
-        raise NotImplementedError(f"property 'surface' in {type(self).__name__}")
-
-    @abstractmethod
-    def get_card_at(self, pos: tuple[int, int]) -> AbstractCard | None:
-        """Return the card at the given pixel position
-
-        :arg pos: The position inside the CardsetGraphic surface.
-        """
-        raise NotImplementedError(f"'get_card_at' in Class {type(self).__name__}")
-
-    @abstractmethod
-    def get_cards_at(self, pos: tuple[int, int]) -> CardsSet | None:
-        """Return a cardset at the given pixel position.
-
-        This can be implemented for allowing moving multiple cards.
-        You will still have to implement :py:meth:`get_card_at`.
-        You will also need to set :py:attr:`drag_multiple_cards`
-        to True.
-        in :py:class:`CarsetRights`. The :py:class:`CardsManager`
-        will then use this method for selection.
-
-        :arg pos: The position inside the CardsetGraphic surface.
-        """
-        raise NotImplementedError(f"'get_cards_at' in Class {type(self).__name__}")
-
-    def remove_card(self, card: AbstractCard) -> None:
-        """Remove a card from the cardset."""
-
-        self.cardset.remove(card)
-        self.clear_cache()
-
-    def pop_card(self, card_index: int) -> AbstractCard:
-        """Remove a card from the cardset.
-
-        :arg card_index: The index at which the card we want to
-            pop is.
-        :return card_at_index: The card at the desired index.
-        """
-
-        card = self.cardset.pop(card_index)
-        self.clear_cache()
-        return card
-
-    def remove_all_cards(self) -> CardsSet:
-        """Remove all cards from the cardset.
-
-        :return cards: A cardset with all the cards remaining.
-        """
-        cardset = CardsSet()
-        while self.cardset:
-            card = self.cardset.pop(0)
-            cardset.append(card)
-        self.clear_cache()
-        return cardset
-
-    def append_card(self, card: AbstractCard) -> None:
-        """Append a card to the cardset."""
-
-        self.cardset.append(card)
-        card.graphics.size = self.card_size
-        card.graphics.clear_cache()
-        self.clear_cache()
-
-    def extend_cards(self, card_set: CardsSet) -> None:
-        self.cardset.extend(card_set)
-        for card in card_set:
-            card.graphics.size = self.card_size
-            card.graphics.clear_cache()
-        self.clear_cache()
-
-    def with_hovered(self, card: AbstractCard | None) -> pygame.Surface:
-        """Show the hand with the card hovered."""
-        if not self._raised_with_hovered_warning:
-            logging.warning(
-                f"Not implemented `with_hovered()` in {type(self).__name__}",
-            )
-            self._raised_with_hovered_warning = True
-        return self.surface
 
 
 class BaseHand(CardsetGraphic):
@@ -165,7 +25,7 @@ class BaseHand(CardsetGraphic):
 
     Usually in a hand the cards are shown on next to the other.
 
-    :attr overlap_hide: The card to hide if to cards are one
+    :param overlap_hide: The card to hide if to cards are one
         over each other. By default the card overlap on the right,
         which is the standard in card games.
         This also implies that the cards are located at the opposite side
@@ -187,7 +47,7 @@ class BaseHand(CardsetGraphic):
 class AlignedHand(BaseHand):
     """A hand of card with all the cards aligned.
 
-    :attr card_spacing: The offset proportion of the position between the cards.
+    :param card_spacing: The offset proportion of the position between the cards.
 
         * 0, means the cards are directly next to each other.
         * Positive offset, means the card will be further
@@ -291,10 +151,6 @@ class AlignedHand(BaseHand):
         return out_surf
 
     def get_card_at(self, pos: tuple[int, int]) -> AbstractCard | None:
-        """Return the card at the given pixel position
-
-        :arg pos: The position inside the CardsHand surface.
-        """
         s = self.surface.get_size()
         if not (pos[0] < s[0] and pos[1] < s[1]):
             self.logger.error(f"get_card_at({pos=}) not in {s}.")
@@ -342,7 +198,7 @@ class RoundedHand(BaseHand):
     the size of the hand.
 
 
-    :attr angle: The angle in which the cards are constrained
+    :param angle: The angle in which the cards are constrained
         (Unit: Degrees)
         If 0, the cards are all aligned.
         If not zero, the cards will be placed on an arc of a circle
@@ -497,26 +353,24 @@ class RoundedHand(BaseHand):
 class Pile(CardsetGraphic):
     """A pile has only its last/s card/s that can be selected.
 
-    :attr offset: The offset between cards."""
+    :param rel_offset: The offset between cards. Relative to the card size.
+
+    """
 
     def __init__(
         self,
         *args,
-        offset: int = 30,
+        rel_offset: float = 0.2,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        self.offset = offset
+        self.rel_offset = rel_offset
 
     def _get_card_index_at(self, pos: tuple[int, int]) -> int | None:
         """Return the index of the card located at the current position."""
         raise NotImplementedError(f"Must implement in {type(self).__name__}")
 
     def get_card_at(self, pos: tuple[int, int]) -> AbstractCard | None:
-        """Return the card at the given pixel position
-
-        :arg pos: The position inside the CardsetGraphic surface.
-        """
         idx = self._get_card_index_at(pos)
 
         return None if idx is None else self.cardset[idx]
@@ -597,11 +451,13 @@ class VerticalPileGraphic(Pile):
     @cached_property
     def y_positions(self) -> list[int]:
         n_cards = len(self.cardset)
-        expected_h = n_cards * self.offset + self.card_size[1]
+        max_offset = self.rel_offset * self.card_size[1]
+
+        expected_h = n_cards * max_offset + self.card_size[1]
         h_space = (
             (self.size[1] - self.card_size[1]) / n_cards
             if expected_h > self.size[1]
-            else self.offset
+            else max_offset
         )
         return [i * h_space for i in range(n_cards)]
 
@@ -669,11 +525,14 @@ class HorizontalPileGraphic(Pile):
     @cached_property
     def x_positions(self) -> list[int]:
         n_cards = len(self.cardset)
-        expected_h = n_cards * self.offset + self.card_size[0]
+        # Get the offset between cards in pixels
+        offset = self.rel_offset * self.card_size[0]
+
+        expected_h = n_cards * offset + self.card_size[0]
         h_space = (
             (self.size[0] - self.card_size[0]) / n_cards
             if expected_h > self.size[0]
-            else self.offset
+            else offset
         )
         return [i * h_space for i in range(n_cards)]
 

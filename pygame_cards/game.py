@@ -1,11 +1,12 @@
-"""Class for representing a game and its content."""
-
+"""Currently not used."""
 
 from pathlib import Path
 from pygame_cards.set import CardsSet
 
 
 class Game:
+    """Represent a game and its content."""
+
     name: str
     contents_directory: Path
 

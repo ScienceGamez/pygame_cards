@@ -1,36 +1,45 @@
-from dataclasses import dataclass, field
 from functools import cached_property
 from pathlib import Path
 from numpy import linspace
 
 import pygame
-import pygame_cards
+from pygame_emojis import load_svg
+
 from pygame_cards.abstract import AbstractCard
 from pygame_cards.effects import outer_border, outer_halo
 from pygame_cards.hands import CardsetGraphic
-
-from pygame_emojis import load_svg
 from pygame_cards.set import CardsSet
-
 from pygame_cards.utils import DEFAULT_CARDBACK
 
 
 class CardBackOwner(CardsetGraphic):
-    """Cardset Grapics that will show card back.
+    """Graphic that can be used for any cardset that will show some card backs.
 
-    Support setting card backs.
+    Support setting card backs using the path to  files or using
+    directly a pygame surface.
+
+    This is intended to be inherited from if you need to have card backs
+    in a custom CardsetGraphic.
     """
 
     def __init__(
         self, *args, card_back: Path | str | pygame.Surface = DEFAULT_CARDBACK, **kwargs
     ):
+        """Create the cardset graphic.
+
+        :arg card_back: The path to the image file or a pygame surface.
+            If a path is given, the image will be loaded from the file.
+            For improving the graphics, we recommend using a svg file as
+            they can be loaded for the desired size directly.
+
+        """
         super().__init__(*args, **kwargs)
 
         self.card_back = card_back
 
     @property
     def card_back(self) -> pygame.Surface:
-        """The card back that should be shonw from the deck."""
+        """The card back that should be shown."""
         return self._card_back
 
     @card_back.setter
@@ -68,13 +77,16 @@ class CardBackOwner(CardsetGraphic):
             _card_back.blit(rect_image, (0, 0), None, pygame.BLEND_RGBA_MIN)
 
         if add_border:
-            outer_border(_card_back, inplace=True)
+            outer_border(_card_back, radius=self.card_border_radius, inplace=True)
 
         self._card_back = _card_back
 
 
 class Deck(CardBackOwner):
-    """Graphics for a deck."""
+    """Graphics for a deck.
+
+    A deck simply shows its back.
+    """
 
     def __init__(
         self,
