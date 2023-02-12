@@ -23,9 +23,7 @@ def key_to_json(key: Any) -> Any:
         key = str(key)
         return key
     except Exception as e:
-        raise TypeError(
-            "Could not convert {key} to a str for being a json valid key."
-        )
+        raise TypeError("Could not convert {key} to a str for being a json valid key.")
 
 
 def item_to_json(item: Any) -> Any:
@@ -44,9 +42,7 @@ def item_to_json(item: Any) -> Any:
     elif isinstance(item, logging.Logger):
         json_item = None
     elif hasattr(item, "__dict__"):
-        _logger.debug(
-            f"item_to_json: Found __dict__, now try converting {item} "
-        )
+        _logger.debug(f"item_to_json: Found __dict__, now try converting {item} ")
         json_item = dic_to_json(item.__dict__)
     else:
         _logger.exception(f"No conversion defined for object {item}")

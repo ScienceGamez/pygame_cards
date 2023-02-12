@@ -73,17 +73,11 @@ class EmojisFrenchSuits(AbstractCardGraphics):
 
     @cached_property
     def symbols_rows(self):
-        return [
-            self.size[1] / 8 * (i + 1) - self.icon_size[0] / 2
-            for i in range(7)
-        ]
+        return [self.size[1] / 8 * (i + 1) - self.icon_size[0] / 2 for i in range(7)]
 
     @cached_property
     def symbols_cols(self):
-        return [
-            self.size[0] / 4 * (i + 1) - self.icon_size[1] / 2
-            for i in range(3)
-        ]
+        return [self.size[0] / 4 * (i + 1) - self.icon_size[1] / 2 for i in range(3)]
 
     @cached_property
     def top_label(self) -> pygame.Surface:
@@ -154,14 +148,11 @@ class EmojisFrenchSuits(AbstractCardGraphics):
         )
         # Add a face to the card
         if self.card.number in LevelEmojis:
-
             code_list = find_code(LevelEmojis[self.card.number])
             code = "-".join(code_list)
             emojis_files = [f for f in _SVG_DIR.rglob(f"{code}*.svg")]
             good_color = [
-                e
-                for e in emojis_files
-                if HEXEmojiColor[self.card.color] in e.stem
+                e for e in emojis_files if HEXEmojiColor[self.card.color] in e.stem
             ]
             # Dimension for the face
             w = self.size[0] * 0.8
@@ -191,9 +182,7 @@ class EmojisFrenchSuits(AbstractCardGraphics):
             flipped_icon = pygame.transform.flip(icon_s, False, True)
             r = self.symbols_rows
             c = self.symbols_cols
-            self.logger.debug(
-                f"{r=}, {c=}, {s.get_size()}, {icon_s.get_size()}"
-            )
+            self.logger.debug(f"{r=}, {c=}, {s.get_size()}, {icon_s.get_size()}")
             if self.card.number in [2, 3]:
                 s.blit(icon_s, (c[1], r[0]))
                 s.blit(flipped_icon, (c[1], r[-1]))
@@ -236,7 +225,6 @@ class EmojisFrenchSuits(AbstractCardGraphics):
 
 @dataclass(repr=False, eq=False)
 class NumberCard(AbstractCard):
-
     number: int | Level
     color: Colors
 
@@ -304,7 +292,6 @@ class CardSets:
 
 
 if __name__ == "__main__":
-
     # This will visualize the cards
 
     pygame.init()
@@ -319,13 +306,9 @@ if __name__ == "__main__":
     print(set)
 
     # Add event to show the first card
-    pygame.event.post(
-        pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_LEFT})
-    )
+    pygame.event.post(pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_LEFT}))
     while 1:
-
         for event in pygame.event.get():
-
             if event.type == pygame.QUIT:
                 sys.exit()
 

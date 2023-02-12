@@ -28,7 +28,6 @@ class MinionCardGraphics(AbstractCardGraphics):
 
     @cached_property
     def surface(self) -> pygame.Surface:
-
         # Size is a property from AbstractCardGraphics
         x, y = self.size
 
@@ -77,11 +76,20 @@ for card in MY_COMMUNITY_OF_THE_RING:
     # Select the good file for each Card.
     match card.name:
         case "Bilbo":
-            file = "DALL·E 2022-08-30 20.58.30 - frodo from lotr being obsessed with the ring, digital art.png"
+            file = (
+                "DALL·E 2022-08-30 20.58.30 - frodo from lotr being obsessed with the"
+                " ring, digital art.png"
+            )
         case "Gandalf":
-            file = "DALL·E 2022-08-30 20.59.25 - gandalf from lotr looking very wise on his horse, digital art.png"
+            file = (
+                "DALL·E 2022-08-30 20.59.25 - gandalf from lotr looking very wise on"
+                " his horse, digital art.png"
+            )
         case "Sam":
-            file = "DALL·E 2022-08-30 21.01.56 - sam the hobbit from lotr sharing some elven bread, digital art.png"
+            file = (
+                "DALL·E 2022-08-30 21.01.56 - sam the hobbit from lotr sharing some"
+                " elven bread, digital art.png"
+            )
         case _:
             raise ValueError(f"Unkonwn character {card.name}")
 
@@ -91,7 +99,6 @@ for card in MY_COMMUNITY_OF_THE_RING:
     )
 
 if __name__ == "__main__":
-
     # A very simple game loop to show the cards
     pygame.init()
 
@@ -101,7 +108,6 @@ if __name__ == "__main__":
     screen.fill("black")
 
     for i, card in enumerate(MY_COMMUNITY_OF_THE_RING):
-
         position = (50 + i * (100 + card.graphics.size[0]), 100)
 
         # Simply blit the card on the main surface
@@ -114,9 +120,7 @@ if __name__ == "__main__":
     )
 
     while 1:
-
         for event in pygame.event.get():
-
             if event.type == pygame.QUIT:
                 sys.exit()
 

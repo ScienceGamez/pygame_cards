@@ -46,7 +46,6 @@ class CardsetGraphic(AbstractGraphic):
     graphics_type: type | None = None
 
     def __post_init__(self):
-
         for card in self.cardset:
             # Enforce the type
             if self.graphics_type:
@@ -57,9 +56,7 @@ class CardsetGraphic(AbstractGraphic):
 
     @abstractproperty
     def surface(self) -> pygame.Surface:
-        raise NotImplementedError(
-            f"property 'surface' in {type(self).__name__}"
-        )
+        raise NotImplementedError(f"property 'surface' in {type(self).__name__}")
 
     @abstractmethod
     def get_card_at(self, pos: tuple[int, int]) -> AbstractCard | None:
@@ -67,9 +64,7 @@ class CardsetGraphic(AbstractGraphic):
 
         :arg pos: The position inside the CardsetGraphic surface.
         """
-        raise NotImplementedError(
-            f"'get_card_at' in Class {type(self).__name__}"
-        )
+        raise NotImplementedError(f"'get_card_at' in Class {type(self).__name__}")
 
     @abstractmethod
     def get_cards_at(self, pos: tuple[int, int]) -> CardsSet | None:
@@ -84,9 +79,7 @@ class CardsetGraphic(AbstractGraphic):
 
         :arg pos: The position inside the CardsetGraphic surface.
         """
-        raise NotImplementedError(
-            f"'get_cards_at' in Class {type(self).__name__}"
-        )
+        raise NotImplementedError(f"'get_cards_at' in Class {type(self).__name__}")
 
     def remove_card(self, card: AbstractCard) -> None:
         """Remove a card from the cardset."""
@@ -211,20 +204,16 @@ class AlignedHand(BaseHand):
         # calculate dimenstions required for the displayed surf
         offset = self.offset_position
         total_x = (
-            len(self.cardset) * self.card_size[0]
-            + (len(self.cardset) - 1) * offset
+            len(self.cardset) * self.card_size[0] + (len(self.cardset) - 1) * offset
         )
 
         if total_x > self.size[0]:
-            self.logger.warning(
-                "Too many cards for hands size, rescaling will apply."
-            )
+            self.logger.warning("Too many cards for hands size, rescaling will apply.")
             offset = (self.size[0] - len(self.cardset) * self.card_size[0]) / (
                 len(self.cardset) - 1
             )
         x_positions = [
-            i * self.card_size[0] + (i + 1) * offset
-            for i in range(len(self.cardset))
+            i * self.card_size[0] + (i + 1) * offset for i in range(len(self.cardset))
         ]
         # Revert the position in case of another overlap
         x_positions = [
@@ -246,9 +235,7 @@ class AlignedHand(BaseHand):
         x_pos = x_posistions[index]
 
         card.graphics.size = self.card_size
-        highlighted_surf = outer_halo(
-            card.graphics.surface, radius=radius, **kwargs
-        )
+        highlighted_surf = outer_halo(card.graphics.surface, radius=radius, **kwargs)
         # assume the center will be on it
         out_surf = pygame.Surface(self.size, pygame.SRCALPHA)
         highlighted_surf = pygame.transform.scale(
@@ -276,15 +263,14 @@ class AlignedHand(BaseHand):
             return None
 
         x_positions, offset = self.calculate_x_positions()
-        self.logger.debug(
-            f"get_card_at({pos=}): {x_positions=}, {self.overlap_hide=}"
-        )
+        self.logger.debug(f"get_card_at({pos=}): {x_positions=}, {self.overlap_hide=}")
 
         # TODO: make this work
         for card_index, x_pos in enumerate(x_positions):
             if pos[0] < x_pos or pos[0] > x_pos + self.card_size[0]:
                 self.logger.debug(
-                    f"get_card_at({pos=}):: {card_index=} is not Between the card boundaries"
+                    f"get_card_at({pos=}):: {card_index=} is not Between the card"
+                    " boundaries"
                 )
                 continue
             if (
@@ -296,16 +282,15 @@ class AlignedHand(BaseHand):
                 and pos[0] - x_pos < self.offset_position
             ):
                 self.logger.debug(
-                    f"get_card_at({pos=}):: {card_index=} is  going to be under the next card"
+                    f"get_card_at({pos=}):: {card_index=} is  going to be under the"
+                    " next card"
                 )
                 continue
             if x_pos - pos[0] > self.card_size[0] + offset:
                 self.logger.debug(f"get_card_at({pos=}): is in offset.")
                 continue  # Between two cards, in the offset
 
-            self.logger.debug(
-                f"get_card_at({pos=}): found index {card_index}."
-            )
+            self.logger.debug(f"get_card_at({pos=}): found index {card_index}.")
             return self.cardset[card_index]
 
         return None
@@ -351,17 +336,14 @@ class RoundedHand(BaseHand):
             self.logger.debug(f"{angle_step=}")
             # from the center, angle = 0, which is the central card and ref point.
             angles = [
-                -self.angle / 2 + i * angle_step
-                for i in range(len(self.cardset))
+                -self.angle / 2 + i * angle_step for i in range(len(self.cardset))
             ]
         # Radius of the circle around the cards (from center to card centers)
         # Trust me, I am an engineer
         card_diagonal = sqrt(self.card_size[0] ** 2 + self.card_size[1] ** 2)
         radius = min(
             # Constraint for width
-            (self.size[0] - card_diagonal)
-            / 2
-            / sin(math.radians(self.angle / 2)),
+            (self.size[0] - card_diagonal) / 2 / sin(math.radians(self.angle / 2)),
             # Constraint for heigth
             (self.size[1] - self.card_size[1] - card_diagonal / 2)
             / (1 - cos(math.radians(self.angle / 2))),
@@ -408,7 +390,6 @@ class RoundedHand(BaseHand):
         self.logger.debug(f"{card_positions=}")
 
         for card_surf, card_pos in zip(rotated_surfs, card_positions):
-
             surf.blit(
                 card_surf,
                 card_pos,
@@ -423,12 +404,7 @@ class RoundedHand(BaseHand):
 
     def get_card_at(self, pos: tuple[int, int]) -> AbstractCard | None:
         # We think pos1 from bottom instead of top
-        if (
-            pos[0] < 0
-            or pos[1] < 0
-            or pos[0] > self.size[0]
-            or pos[1] > self.size[1]
-        ):
+        if pos[0] < 0 or pos[1] < 0 or pos[0] > self.size[0] or pos[1] > self.size[1]:
             self.logger.debug(f"{pos=} ut of bound")
             return None
 
@@ -437,8 +413,7 @@ class RoundedHand(BaseHand):
         self.logger.debug(f"Center {self._center_pos=}")
 
         dist_to_center = sqrt(
-            (pos[0] - self._center_pos[0]) ** 2
-            + (pos[1] - self._center_pos[1]) ** 2
+            (pos[0] - self._center_pos[0]) ** 2 + (pos[1] - self._center_pos[1]) ** 2
         )
         self.logger.debug(f"{dist_to_center=}")
         if (
@@ -452,14 +427,8 @@ class RoundedHand(BaseHand):
             # Reverse because cards at the end are over the previous
             self.logger.debug(f"Check {card=} with {angle=}")
             card_center = (
-                (
-                    self._center_pos[0]
-                    + sin(math.radians(angle)) * self._radius
-                ),
-                (
-                    self._center_pos[1]
-                    + cos(math.radians(angle)) * self._radius
-                ),
+                (self._center_pos[0] + sin(math.radians(angle)) * self._radius),
+                (self._center_pos[1] + cos(math.radians(angle)) * self._radius),
             )
             dist_to_card_center = sqrt(
                 (pos[0] - card_center[0]) ** 2 + (pos[1] - card_center[1]) ** 2
@@ -467,11 +436,7 @@ class RoundedHand(BaseHand):
             # Cosine theorem to find angle (center, card, pos)
             # {\displaystyle a^{2}=c^{2}+b^{2}-2bc\cos \alpha }.
             a = math.acos(
-                (
-                    dist_to_center**2
-                    - dist_to_card_center**2
-                    - self._radius**2
-                )
+                (dist_to_center**2 - dist_to_card_center**2 - self._radius**2)
                 / (-2 * dist_to_card_center * self._radius)
             )
             # Distance to the line from the center to the center of the card
@@ -530,7 +495,6 @@ class VerticalPileGraphic(Pile):
 
     @cached_property
     def surface(self) -> pygame.Surface:
-
         # Create the surface
         surf = pygame.Surface(self.size, pygame.SRCALPHA)
 
@@ -595,7 +559,6 @@ class HorizontalPileGraphic(Pile):
 
     @cached_property
     def surface(self) -> pygame.Surface:
-
         # Create the surface
         surf = pygame.Surface(self.size, pygame.SRCALPHA)
 
@@ -644,7 +607,6 @@ class HorizontalPileGraphic(Pile):
 
 
 if __name__ == "__main__":
-
     # This will visualize the cards
 
     import sys
@@ -688,6 +650,5 @@ if __name__ == "__main__":
         pygame.display.update()
         sleep(1)
         for event in pygame.event.get():
-
             if event.type == pygame.QUIT:
                 sys.exit()

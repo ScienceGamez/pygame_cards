@@ -15,9 +15,7 @@ class CardBackGraphics(AbstractCardGraphics):
 
     @cached_property
     def surface(self) -> pygame.Surface:
-        return pygame.transform.scale(
-            pygame.image.load(DEFAULT_CARDBACK), self.size
-        )
+        return pygame.transform.scale(pygame.image.load(DEFAULT_CARDBACK), self.size)
 
 
 CARD_BACK.graphics_type = CardBackGraphics
@@ -36,9 +34,7 @@ if __name__ == "__main__":
     screen.blit(CARD_BACK.graphics.surface, position)
 
     while 1:
-
         for event in pygame.event.get():
-
             if event.type == pygame.QUIT:
                 sys.exit()
 

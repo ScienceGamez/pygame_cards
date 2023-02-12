@@ -10,6 +10,7 @@ from pygame_cards.io.utils import to_json
 
 _CARDSET_ID_GENERATOR = itertools.count()
 
+
 class CardsSetGraphic(AbstractGraphic):
     """Graphic representation of a set of cards."""
 
@@ -26,6 +27,7 @@ class CardsSet(list[AbstractCard]):
     :py:class:`~pygame_cards.abstract.AbstractCardGraphics`
     for the graphics.
     """
+
     _graphics: CardsSetGraphic | None = None
 
     def __init__(self, *args: AbstractCard) -> None:
@@ -46,7 +48,7 @@ class CardsSet(list[AbstractCard]):
             return type(self)(super().__getitem__(index))
         else:
             raise TypeError(f"Invalid index type: {type(index)}")
-        
+
     # creation methods
     @classmethod
     def generate(cls) -> CardsSet:
@@ -102,11 +104,7 @@ class CardsSet(list[AbstractCard]):
         :return: A new card set that contain only the specifed cards.
         """
         return CardsSet(
-            [
-                card
-                for card in self
-                if card.add_card_at_playercount <= n_players
-            ]
+            [card for card in self if card.add_card_at_playercount <= n_players]
         )
 
     def draw(self, n_cards: int) -> CardsSet:
@@ -158,11 +156,7 @@ class CardsSet(list[AbstractCard]):
             for _ in range(n_sets)
         ]
 
-        if (
-            not equally
-            and not n_cards
-            and (remaining_cards := (len(self) % n_sets))
-        ):
+        if not equally and not n_cards and (remaining_cards := (len(self) % n_sets)):
             for i in range(remaining_cards):
                 dist[i].append(self.pop(0))
 
@@ -249,13 +243,12 @@ class CardsSet(list[AbstractCard]):
         with file.open("w+") as f:
             json.dump(to_json(self), f)
 
-    
-    # Graphic methods 
+    # Graphic methods
     @property
     def graphics(self) -> CardsSetGraphic:
         if self._graphics is None:
             raise NotImplementedError(f"No graphics set for {self}")
-        
+
         return self._graphics
 
     @graphics.setter

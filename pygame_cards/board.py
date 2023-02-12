@@ -73,7 +73,7 @@ if __name__ == "__main__":
     import logging
     from pygame_cards.classics import CardSets
     from pygame_cards.hands import VerticalPileGraphic
-    
+
     logging.basicConfig()
     set_1 = CardSets.n52[:10]
     set_1.graphics = VerticalPileGraphic(set_1)
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     surf = board.graphics.surface()
     fps = 60
     clock = pygame.time.Clock()
-    
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

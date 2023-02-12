@@ -41,9 +41,7 @@ manager.add_set(
 )
 
 ennemy_cards = CardsSet([CARD_BACK, CARD_BACK, CARD_BACK])
-ennemy_cards_graphics = AlignedHand(
-    ennemy_cards, card_set_size, card_size=card_size
-)
+ennemy_cards_graphics = AlignedHand(ennemy_cards, card_set_size, card_size=card_size)
 manager.add_set(
     ennemy_cards_graphics,
     # Place them in front on the screen
@@ -114,7 +112,6 @@ while 1:
         annimation_tick_left = 10
 
     for event in pygame.event.get():
-
         if event.type == pygame.QUIT:
             sys.exit()
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:

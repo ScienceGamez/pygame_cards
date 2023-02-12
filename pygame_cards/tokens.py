@@ -187,9 +187,7 @@ class PokerChipGraphics(RoundTokenGraphics):
     @cached_property
     def surface(self) -> pygame.Surface:
         surf = pygame.Surface(self.size, pygame.SRCALPHA)
-        pygame.draw.circle(
-            surf, self.color, (self.radius, self.radius), self.radius
-        )
+        pygame.draw.circle(surf, self.color, (self.radius, self.radius), self.radius)
         # Draw the small lines in the inner circle
         inner_rect = pygame.Rect(
             self.border_radius,
@@ -236,9 +234,7 @@ class PokerChipGraphics(RoundTokenGraphics):
         for i in range(6):
             angle = 2 * math.pi / 6 * i + offset
             dice.set_value(i + 1)
-            dice_surf = pygame.transform.rotate(
-                dice.surface, angle=math.degrees(angle)
-            )
+            dice_surf = pygame.transform.rotate(dice.surface, angle=math.degrees(angle))
             surf.blit(
                 dice_surf,
                 (
@@ -265,9 +261,7 @@ if __name__ == "__main__":
 
     pygame.image.save(chip.surface, "docs/images/poker_chip.png")
 
-    dice = Dice(
-        edge=400, value=6, dot_radius=30, radius=40, background_color="orange"
-    )
+    dice = Dice(edge=400, value=6, dot_radius=30, radius=40, background_color="orange")
     screen.blit(dice.surface, (400, 0))
     pygame.image.save(dice.surface, "docs/images/dice.png")
 
@@ -275,11 +269,9 @@ if __name__ == "__main__":
     # Game loop
     # keep game running till running is true
     while running:
-
         # Check for event if user has pushed
         # any event in queue
         for event in pygame.event.get():
-
             # if event is of type quit then set
             # running bool to false
             if event.type == pygame.QUIT:

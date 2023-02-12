@@ -31,9 +31,7 @@ def cardsset_clicked(set: CardsSet, card: AbstractCard | None):
     return Event(CARDSSET_CLICKED, {"set": set, "card": card})
 
 
-def card_moved(
-    card: AbstractCard, from_set: CardsetGraphic, to_set: CardsetGraphic
-):
+def card_moved(card: AbstractCard, from_set: CardsetGraphic, to_set: CardsetGraphic):
     """When a card has been moved from one set to another."""
     return Event(
         CARD_MOVED,
@@ -46,7 +44,6 @@ def card_moved(
 
 
 if __name__ == "__main__":
-
     from pygame_cards.classics import CardSets
 
     e = cardsset_clicked(CardSets.n36)

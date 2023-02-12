@@ -41,9 +41,7 @@ for i, card in enumerate(card_set):
 pygame.display.update()
 
 while 1:
-
     for event in pygame.event.get():
-
         if event.type == pygame.QUIT:
             sys.exit()
 

@@ -40,9 +40,7 @@ class ClientPlayer(Player):
             game_start_dict = json.loads(join_game_response)
             print(game_start_dict)
             if "default_cards_set" in game_start_dict:
-                card_set = get_default_card_set(
-                    game_start_dict["default_cards_set"]
-                )
+                card_set = get_default_card_set(game_start_dict["default_cards_set"])
                 print(card_set)
             await websocket.send(
                 json.dumps(

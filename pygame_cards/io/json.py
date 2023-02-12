@@ -37,10 +37,7 @@ def from_json(file: Path, card_type: Type = AbstractCard) -> CardsSet:
     for card_dict in cards_list:
         # Find at which number of player the card should be added
         if "add_card_at_playercount" in card_dict.keys():
-
-            player_counts: list[int] = card_dict.pop(
-                "add_card_at_playercount", [1]
-            )
+            player_counts: list[int] = card_dict.pop("add_card_at_playercount", [1])
             if isinstance(player_counts, list):
                 # Make a Mik mack to correctly add the cards
                 card_dict["add_card_at_playercount"] = player_counts[0]
@@ -71,8 +68,7 @@ def from_jsons(
         )
         if isinstance(card_types, list):
             raise TypeError(
-                "Impossible to specifiy "
-                "'card_types' as list and 'files' as Path"
+                "Impossible to specifiy 'card_types' as list and 'files' as Path"
             )
         # Find all the json files in the given pattern
         files = [f for f in Path(files).rglob("*.json")]
@@ -80,8 +76,5 @@ def from_jsons(
         card_types = [card_types for _ in files]
 
     return CardsSet.join(
-        *[
-            from_json(file, card_type)
-            for file, card_type in zip(files, card_types)
-        ]
+        *[from_json(file, card_type) for file, card_type in zip(files, card_types)]
     )

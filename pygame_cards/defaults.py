@@ -2,7 +2,6 @@ from pygame_cards.set import CardsSet
 
 
 class DefaultCardsSet(CardsSet):
-
     name: str
 
 

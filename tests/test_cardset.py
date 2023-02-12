@@ -170,7 +170,6 @@ class TestSaving(unittest.TestCase):
         cards_set.to_json(self.test_file)
         loaded_set = from_json(self.test_file, self.set_card_type)
         for card1, card2 in zip(cards_set, loaded_set):
-
             self.assertEqual(card1.name, card2.name)
 
 

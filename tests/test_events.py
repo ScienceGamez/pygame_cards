@@ -44,15 +44,12 @@ class TestCardsManager(unittest.TestCase):
         )
 
     def test_can_add_graphics(self):
-
         self.manager.add_set(self.cardset_graphic, (10, 10))
 
         self.assertIn(self.cardset_graphic, self.manager.card_sets)
 
     def test_can_listen_events(self):
-        test_event = pygame.event.Event(
-            pygame.MOUSEBUTTONDOWN, {"pos": (0, 0)}
-        )
+        test_event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"pos": (0, 0)})
         self.manager.process_events(test_event)
 
         self.manager.update(0.2)

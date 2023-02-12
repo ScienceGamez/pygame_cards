@@ -133,7 +133,6 @@ class Deck(CardBackOwner):
 
 
 if __name__ == "__main__":
-
     # This will visualize the cards
 
     import sys
@@ -158,9 +157,7 @@ if __name__ == "__main__":
 
     screen.blit(deck_with_max.surface, (600, 200))
     while 1:
-
         for event in pygame.event.get():
-
             if event.type == pygame.QUIT:
                 sys.exit()
 

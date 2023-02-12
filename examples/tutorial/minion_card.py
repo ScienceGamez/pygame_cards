@@ -19,7 +19,6 @@ class MinionCard(AbstractCard):
 
 
 if __name__ == "__main__":
-
     card = MinionCard(
         name="Frodo the Hobbit",
         health=6,

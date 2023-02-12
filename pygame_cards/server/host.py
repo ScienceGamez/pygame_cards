@@ -52,15 +52,12 @@ class ClientManager:
                     # send the response
                     await websocket.send(json.dumps(response))
                 case {"event": "player_ready"}:
-                    websockets.broadcast(
-                        self.websockets, f"Client joined {websocket}"
-                    )
+                    websockets.broadcast(self.websockets, f"Client joined {websocket}")
                     self.websockets.append(websocket)
                 case _:
                     logging.error(f"{message_dict}")
 
     async def listen_commands(self):
-
         parser = argparse.ArgumentParser()
         parser.add_argument("command")
         while True:
@@ -71,10 +68,7 @@ class ClientManager:
             match args.command:
                 case "hello":
                     await asyncio.gather(
-                        *[
-                            websocket.send("hello")
-                            for websocket in self.websockets
-                        ]
+                        *[websocket.send("hello") for websocket in self.websockets]
                     )
                 case "exit":
                     return

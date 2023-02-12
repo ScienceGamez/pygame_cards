@@ -88,8 +88,7 @@ def outer_halo(
             raise NotImplementedError(f"{decay = } not implemented.")
 
     halo_colors = [
-        inner_color.lerp(outer_color, decay_func(i))
-        for i in range(int(radius))
+        inner_color.lerp(outer_color, decay_func(i)) for i in range(int(radius))
     ]
     # A line surface to put the halo on
     line_surf = pygame.Surface((int(radius), 1), pygame.SRCALPHA)
@@ -103,15 +102,11 @@ def outer_halo(
     surf.blits(blit_right)
 
     line_surf = pygame.transform.rotate(line_surf, 90)
-    blit_top = [
-        (line_surf, (i, 0)) for i in range(radius, inner_size[0] + radius)
-    ]
+    blit_top = [(line_surf, (i, 0)) for i in range(radius, inner_size[0] + radius)]
     surf.blits(blit_top)
 
     line_surf = pygame.transform.rotate(line_surf, 90)
-    blit_left = [
-        (line_surf, (0, i)) for i in range(radius, inner_size[1] + radius)
-    ]
+    blit_left = [(line_surf, (0, i)) for i in range(radius, inner_size[1] + radius)]
     surf.blits(blit_left)
 
     line_surf = pygame.transform.rotate(line_surf, 90)
@@ -122,9 +117,7 @@ def outer_halo(
     surf.blits(blit_bot)
 
     # Now do the same for the edge but it is 2D
-    coords = sum(
-        [[(i, j) for i in range(radius)] for j in range(radius)], start=[]
-    )
+    coords = sum([[(i, j) for i in range(radius)] for j in range(radius)], start=[])
     rads = [sqrt(i**2 + j**2) for i, j in coords]
     angle_surf = pygame.Surface((radius, radius), pygame.SRCALPHA)
     for coord, r in zip(coords, rads):

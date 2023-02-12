@@ -40,9 +40,7 @@ class AbstractCard:
         compare=False,
         repr=False,
     )
-    _graphics: AbstractCardGraphics = field(
-        init=False, compare=False, repr=False
-    )
+    _graphics: AbstractCardGraphics = field(init=False, compare=False, repr=False)
 
     def __post_init__(self):
         # Get a thread safe unique ID for that card
@@ -50,9 +48,7 @@ class AbstractCard:
             global _CARDS_COUNTER
             self.u_id = _CARDS_COUNTER
             _CARDS_COUNTER += 1
-        self.logger = logging.getLogger(
-            f"pywonders.cards.{type(self).__name__}"
-        )
+        self.logger = logging.getLogger(f"pywonders.cards.{type(self).__name__}")
 
     def __repr__(self) -> str:
         return f"Card({self.name})"
@@ -144,6 +140,4 @@ class Manager:
     logger: logging.Logger
 
     def __init__(self) -> None:
-        self.logger = logging.getLogger(
-            f"pygame_cards.manager.{type(self).__name__}"
-        )
+        self.logger = logging.getLogger(f"pygame_cards.manager.{type(self).__name__}")

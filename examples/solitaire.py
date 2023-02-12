@@ -43,7 +43,6 @@ class ClondikePileGaphics(VerticalPileGraphic, CardBackOwner):
 
     @cached_property
     def surface(self) -> pygame.Surface:
-
         # Create the surface
         surf = pygame.Surface(self.size)
 
@@ -77,7 +76,6 @@ class ClondikePileGaphics(VerticalPileGraphic, CardBackOwner):
             return idx
 
     def remove_card(self, card: AbstractCard) -> None:
-
         return super().remove_card(card)
 
     def can_put(self, card: NumberCard) -> bool:
@@ -88,11 +86,8 @@ class ClondikePileGaphics(VerticalPileGraphic, CardBackOwner):
             return True
         last_card: NumberCard = self.cardset[-1]
         black_colors = [Colors.CLUB, Colors.SPADE]
-        if (
-            card.color in black_colors and last_card.color in black_colors
-        ) or (
-            card.color not in black_colors
-            and last_card.color not in black_colors
+        if (card.color in black_colors and last_card.color in black_colors) or (
+            card.color not in black_colors and last_card.color not in black_colors
         ):
             # Color should be different
             return False
@@ -151,9 +146,7 @@ for pile in range(N_PILES):
     next_card_idx = card_idx + pile + 1
     piles_card_sets.append(card_set[card_idx:next_card_idx])
     card_idx = next_card_idx
-    this_pile_graphics = ClondikePileGaphics(
-        piles_card_sets[-1], pile_size, card_size
-    )
+    this_pile_graphics = ClondikePileGaphics(piles_card_sets[-1], pile_size, card_size)
     piles_graphics.append(this_pile_graphics)
 
     # Finally add the set to the manager
@@ -237,7 +230,6 @@ while 1:
                 sys.exit()
             case pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-
                     sys.exit()
             case pygame_cards.events.CARD_MOVED:
                 from_set = event.from_set
@@ -259,7 +251,6 @@ while 1:
                     # Check if it can be stored in the packs
                     depot = depots[card.color]
                     if depot.can_put(card):
-
                         depot.append_card(card)
                         set.remove_card(card)
                         if isinstance(set, ClondikePileGaphics):
@@ -274,9 +265,7 @@ while 1:
                     else:
                         if temp_3_cards.cardset:
                             # Put away the cards
-                            temp_3_cards_storage.append(
-                                temp_3_cards.cardset.draw(-1)
-                            )
+                            temp_3_cards_storage.append(temp_3_cards.cardset.draw(-1))
                         cards = deck.draw_cards(min(3, len(deck.cardset)))
                         temp_3_cards.extend_cards(cards)
 
