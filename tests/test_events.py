@@ -40,7 +40,6 @@ class TestCardsManager(unittest.TestCase):
             test_card_set,
             size=(30, 10),
             card_size=(10, 8),
-            card_border_radius=1,
         )
 
     def test_can_add_graphics(self):
