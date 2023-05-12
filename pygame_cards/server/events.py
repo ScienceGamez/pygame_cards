@@ -8,6 +8,7 @@ from pygame_cards.defaults import DefaultCardsSet
 
 CARD_PLAYED = pygame.event.custom_type()
 
+
 # subclass JSONEncoder
 class PygameEventsEncoder(JSONEncoder):
     def default(self, o: pygame.event.Event | Any):
