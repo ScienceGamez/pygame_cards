@@ -7,7 +7,7 @@ import threading
 import websockets
 import json
 import pygame
-from pygame_cards.server.events import CARD_PLAYED, PygameEventsEncoder
+from pygame_cards.server.json_encoding import CARD_PLAYED, PygameEventsEncoder
 from pygame_cards.defaults import get_default_card_set
 from pygame_cards.server.player import Player
 
