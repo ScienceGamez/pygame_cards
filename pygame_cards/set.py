@@ -36,6 +36,7 @@ class CardsetGraphic(AbstractGraphic):
         size: tuple[int, int] = constants.CARDSET_SIZE,
         card_size: tuple[int, int] = constants.CARD_SIZE,
         card_border_radius_ratio: float = constants.CARD_BORDER_RADIUS_RATIO,
+        card_halo_ratio: float = constants.CARD_HALO_RATIO,
         graphics_type: type | None = None,
         max_cards: int = 0,
     ):
@@ -43,6 +44,7 @@ class CardsetGraphic(AbstractGraphic):
         self._size = size
         self.card_size = card_size
         self.card_border_radius_ratio = card_border_radius_ratio
+        self.card_halo_ratio = card_halo_ratio
         self.max_cards = max_cards
         self.graphics_type = graphics_type
 

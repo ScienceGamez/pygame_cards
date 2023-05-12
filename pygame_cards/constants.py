@@ -8,6 +8,8 @@ CARDSET_SIZE: tuple[int, int] = (900, 240)
 BOARD_SIZE: tuple[int, int] = (720, 560)
 # The radius of the circled borders of the cards
 CARD_BORDER_RADIUS_RATIO: float = 0.05
+# Halo around the card
+CARD_HALO_RATIO: float = 0.1
 
 
 # Common screen resolutions

@@ -97,19 +97,21 @@ class AlignedHand(BaseHand):
             The offset_value is the value used to make the
             spacing between the cards.
         """
-        # calculate dimenstions required for the displayed surf
+        n_cards = len(self.cardset)
+        # calculate the offset between the cards in pixels
         offset = self.card_spacing * self.card_size[0]
-        total_x = (
-            len(self.cardset) * self.card_size[0] + (len(self.cardset) - 1) * offset
-        )
+
+        # Start offset, allows for halo when card is hovered
+        x_start = self.card_halo_ratio * self.card_size[0]
+
+        total_x = n_cards * self.card_size[0] + (n_cards - 1) * offset + x_start
 
         if total_x > self.size[0]:
             self.logger.warning("Too many cards for hands size, rescaling will apply.")
-            offset = (self.size[0] - len(self.cardset) * self.card_size[0]) / (
-                len(self.cardset) - 1
-            )
+            width_taken = n_cards * self.card_size[0] + x_start
+            offset = (self.size[0] - width_taken) / (n_cards - 1)
         x_positions = [
-            i * self.card_size[0] + i * offset for i in range(len(self.cardset))
+            i * self.card_size[0] + i * offset + x_start for i in range(n_cards)
         ]
         # Revert the position in case of another overlap
         x_positions = [
@@ -122,15 +124,16 @@ class AlignedHand(BaseHand):
 
         return x_positions, offset
 
-    def with_hovered(
-        self, card: AbstractCard | None, radius: float = 20, **kwargs
-    ) -> pygame.Surface:
+    def with_hovered(self, card: AbstractCard | None, **kwargs) -> pygame.Surface:
         if card is None:
             return pygame.Surface((0, 0))
         index = self.cardset.index(card)
         self.logger.debug(f"{index=}")
         x_posistions, _ = self.calculate_x_positions()
         x_pos = x_posistions[index]
+
+        # Halo radius
+        radius = self.card_halo_ratio * self.card_size[0]
 
         card.graphics.size = self.card_size
         highlighted_surf = outer_halo(card.graphics.surface, radius=radius, **kwargs)
