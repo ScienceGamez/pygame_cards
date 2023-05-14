@@ -151,6 +151,7 @@ class CardsManager(Manager):
             in ms.
         :return: whether the surface was updated or not.
         """
+        # Explain the logic here:
 
         if self.mouse_pos is None:
             # update the mouse pos if not in an event
@@ -197,6 +198,7 @@ class CardsManager(Manager):
 
         if self._is_aquiring_card and self._stop_aquiring_card:
             # Was a single click
+            self.logger.debug("Was a single click")
             _card_set_rights = self._card_sets_rigths[
                 self.card_sets.index(self._cardset_under_mouse)
             ]
@@ -208,6 +210,9 @@ class CardsManager(Manager):
                     self._cardset_under_mouse, self._card_under_mouse
                 )
                 pygame.event.post(clicked_event)
+                self.logger.debug(
+                    f"Posted clicked from single click {clicked_event = }"
+                )
             # Single click done
             self._is_aquiring_card, self._stop_aquiring_card = False, False
 
@@ -217,6 +222,8 @@ class CardsManager(Manager):
             and self._card_under_acquisition is None
             and self._cardset_under_acquisition is None
         ):
+            # User has an aquired a card and does something with it
+            self.logger.debug("User has an aquired a card and does something with it")
             _card_set_rights = self._card_sets_rigths[
                 self.card_sets.index(self._cardset_under_mouse)
             ]
@@ -244,12 +251,13 @@ class CardsManager(Manager):
                     self._card_under_acquisition.graphics.clear_cache()
 
             # self._cardset_under_mouse = None
-            self._card_under_mouse = None
+            # self._card_under_mouse = None
             self._subcardset_under_mouse = None
             self._is_aquiring_card = False
 
         if self._stop_aquiring_card:
             # Card released
+            self.logger.debug("Card released")
             if (
                 self._cardset_under_mouse == self._cardset_of_acquisition
                 and self.get_cardset_rights(self._cardset_under_mouse).clickable
@@ -263,6 +271,9 @@ class CardsManager(Manager):
                             self._card_under_acquisition,
                         )
                     )
+                    self.logger.debug(
+                        f"Posted clicked after release  {clicked_event = }"
+                    )
                 if (
                     self._cardset_under_acquisition
                     and len(self._cardset_under_acquisition) == 1
@@ -272,6 +283,10 @@ class CardsManager(Manager):
                             self._cardset_under_mouse,
                             self._cardset_under_acquisition[0],
                         )
+                    )
+                    self.logger.debug(
+                        "Posted clicked after release only one card in set"
+                        f" {clicked_event = }"
                     )
 
             if (
@@ -327,12 +342,12 @@ class CardsManager(Manager):
             and self._cardset_under_mouse is not None
             and self.get_cardset_rights(self._cardset_under_mouse).clickable
         ):
-            pygame.event.post(
-                cardsset_clicked(
-                    self._cardset_under_mouse,
-                    self._card_under_mouse,
-                )
+            clicked_event = cardsset_clicked(
+                self._cardset_under_mouse,
+                self._card_under_mouse,
             )
+            pygame.event.post(clicked_event)
+            self.logger.debug(f"Posted {clicked_event = }")
         # Update the mouse position and speed
         self.mouse_speed = (
             self.mouse_pos[0] - self.last_mouse_pos[0],
