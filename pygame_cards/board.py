@@ -2,6 +2,7 @@
 
 Game boards allow for having cards and other things at specific places.
 """
+
 from __future__ import annotations
 from functools import cached_property
 import sys
@@ -28,8 +29,10 @@ class GameBoardGraphic(AbstractGraphic):
     def __init__(
         self,
         cardsets_rel_pos: dict[CardsSet, tuple[float, float]] = {},
-        cardsets_rel_size: dict[CardsSet, tuple[float, float]]
-        | tuple[int, int] = (0.2, 0.8),
+        cardsets_rel_size: dict[CardsSet, tuple[float, float]] | tuple[int, int] = (
+            0.2,
+            0.8,
+        ),
         size: tuple[int, int] = constants.BOARD_SIZE,
     ) -> None:
         """Initialize a game board.

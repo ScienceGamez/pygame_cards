@@ -1,4 +1,5 @@
 """An example of game: solitaire-klondike."""
+
 from dataclasses import dataclass, field
 from functools import cached_property
 import sys
@@ -202,9 +203,9 @@ manager.add_set(
         clickable=True,
         draggable_in=False,
         # Only the last card can be used
-        draggable_out=lambda card: card == temp_3_cards.cardset[-1]
-        if temp_3_cards.cardset
-        else True,
+        draggable_out=lambda card: (
+            card == temp_3_cards.cardset[-1] if temp_3_cards.cardset else True
+        ),
     ),
 )
 

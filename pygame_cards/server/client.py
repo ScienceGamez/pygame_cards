@@ -57,8 +57,7 @@ class ClientPlayer(Player):
     def send(self, message: str):
         asyncio.run(self.websocket.send(message))
 
-    async def player_action(self):
-        ...
+    async def player_action(self): ...
 
     def start_game_loop(self):
         def join_game():

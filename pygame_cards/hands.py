@@ -113,9 +113,11 @@ class AlignedHand(BaseHand):
         ]
         # Revert the position in case of another overlap
         x_positions = [
-            x_pos
-            if self.overlap_hide == CardOverlap.right
-            else self.size[0] - self.card_size[0] - x_pos
+            (
+                x_pos
+                if self.overlap_hide == CardOverlap.right
+                else self.size[0] - self.card_size[0] - x_pos
+            )
             for x_pos in x_positions
         ]
         self.logger.debug(f"{x_positions=}")

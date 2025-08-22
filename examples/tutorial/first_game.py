@@ -1,4 +1,5 @@
 """This is the first game we implement."""
+
 import sys
 import pygame
 from examples.tutorial.minion_card_graphics import MinionCardGraphics

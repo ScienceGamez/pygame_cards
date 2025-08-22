@@ -1,4 +1,5 @@
 """Game Manager for cards in pygame."""
+
 from dataclasses import dataclass
 import logging
 import random

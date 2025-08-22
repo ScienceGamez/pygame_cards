@@ -6,6 +6,7 @@ For that reason pygame_cards implements them using a simple api.
 
 The current implementation is based on emojis and graphics are created at runtime.
 """
+
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
@@ -61,6 +62,7 @@ LevelEmojis: dict[Level, str] = {
     Level.QUEEN: "👸",
     Level.JACK: "💂",
 }
+
 
 class classproperty(property):
     def __get__(self, obj, cls=None):

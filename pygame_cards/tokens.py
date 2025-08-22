@@ -6,6 +6,7 @@ pygame_cards also include suport for tokens.
 * ValuedToken is a token with a Value
 * Token container which display piles of tokens
 """
+
 from __future__ import annotations
 import math
 from dataclasses import dataclass

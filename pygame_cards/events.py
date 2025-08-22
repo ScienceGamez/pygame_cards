@@ -15,6 +15,7 @@ based on the card/cardsets concerned with the event.
 Most of the events are fully handled by the :py:class:`CardsManager` .
 
 """
+
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from pygame.event import Event, custom_type

@@ -129,7 +129,7 @@ class Deck(CardBackOwner):
         for card, x, y in zip(self.cardset, x_positions, y_positions):
             surf.blit(
                 card.graphics.surface if self.visible else self.card_back,
-                (x, y)
+                (x, y),
                 # (
                 #    (self.size[0] - self.card_size[0]) // 2,
                 #    (self.size[1] - self.card_size[1]) // 2,

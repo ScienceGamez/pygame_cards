@@ -1,6 +1,5 @@
 """Some effects for cards."""
 
-
 from enum import auto
 from math import sqrt
 import pygame
