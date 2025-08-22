@@ -16,7 +16,7 @@ import sys
 import pygame
 from pygame_cards.abstract import AbstractCard
 from pygame_cards.abstract import AbstractCardGraphics
-from pygame_emojis import load_emoji, load_svg, find_code, _SVG_DIR
+from pygame_emojis import load_emoji, emoji_to_surface, find_code, _EMOJIS_DIR
 
 from pygame_cards.effects import outer_halo, Decay
 from pygame_cards.set import CardsSet
@@ -61,6 +61,10 @@ LevelEmojis: dict[Level, str] = {
     Level.QUEEN: "👸",
     Level.JACK: "💂",
 }
+
+class classproperty(property):
+    def __get__(self, obj, cls=None):
+        return self.fget(cls)
 
 
 @dataclass
@@ -159,14 +163,14 @@ class EmojisFrenchSuits(AbstractCardGraphics):
         if self.card.number in LevelEmojis:
             code_list = find_code(LevelEmojis[self.card.number])
             code = "-".join(code_list)
-            emojis_files = [f for f in _SVG_DIR.rglob(f"{code}*.svg")]
+            emojis_files = [f for f in _EMOJIS_DIR.rglob(f"{code}*")]
             good_color = [
                 e for e in emojis_files if HEXEmojiColor[self.card.color] in e.stem
             ]
             # Dimension for the face
             w = self.size[0] * 0.8
             h = self.size[1] * 0.4
-            face_surf = load_svg(good_color[0], size=(w, h))
+            face_surf = emoji_to_surface(good_color[0], size=(w, h))
             s.blit(
                 pygame.transform.flip(face_surf, False, True),
                 ((self.size[0] - w) / 2, (self.size[1] - h)),
@@ -273,8 +277,7 @@ class CardSets:
     :param n36: A 36 game cards.
     """
 
-    @classmethod
-    @property
+    @classproperty
     def n52(self) -> DefaultCardsSet[NumberCard]:
         cardset = DefaultCardsSet(
             [
@@ -286,8 +289,7 @@ class CardSets:
         cardset.name = "n52"
         return cardset
 
-    @classmethod
-    @property
+    @classproperty
     def n36(self) -> CardsSet[NumberCard]:
         cardset = DefaultCardsSet(
             [
